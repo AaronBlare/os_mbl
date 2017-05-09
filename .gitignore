@@ -27,3 +27,17 @@
 *.exe
 *.out
 *.app
+
+*.manifest
+
+*.ilk
+
+*.pdb
+
+*.tlog
+
+*.lastbuildstate
+
+cpp/QJ/QJ/Debug/
+
+*.log

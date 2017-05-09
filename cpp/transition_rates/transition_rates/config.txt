@@ -1,0 +1,12 @@
+Nc 12
+W 10.0
+U 1.0
+J 1.0
+g 0.1
+dt 1
+alpha 3.0
+et 0
+init 0
+seed 1
+max_num_seeds 1000
+dump 2
