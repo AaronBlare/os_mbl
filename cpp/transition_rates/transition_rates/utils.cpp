@@ -64,16 +64,16 @@ void print_int_array(int * data, int N)
 string file_name_suffix(ConfigParam &cp, int precision)
 {
 	stringstream fns;
-	fns << "_Nc("				<< cp.Nc												<< ")";
-	fns << "_dt("				<< cp.dt												<< ")";
-	fns << "_alpha("			<< setprecision(precision) << fixed << cp.alpha			<< ")";
-	fns << "_et("				<< cp.et												<< ")";
-	fns << "_W("				<< setprecision(precision) << fixed << cp.W				<< ")";
-	fns << "_U("				<< setprecision(precision) << fixed << cp.U				<< ")";
-	fns << "_J("				<< setprecision(precision) << fixed << cp.J				<< ")";
-	fns << "_g("				<< setprecision(precision) << fixed << cp.g				<< ")";
-	fns << "_max_num_seeds("	<< cp.max_num_seeds										<< ")";
-	fns << "_seed("				<< cp.seed												<< ")";
+	fns << "_Nc("					<< cp.Nc												<< ")";
+	fns << "_dt("					<< cp.dt												<< ")";
+	fns << "_alpha("				<< setprecision(precision) << fixed << cp.alpha			<< ")";
+	fns << "_et("					<< cp.et												<< ")";
+	fns << "_W("					<< setprecision(precision) << fixed << cp.W				<< ")";
+	fns << "_U("					<< setprecision(precision) << fixed << cp.U				<< ")";
+	fns << "_J("					<< setprecision(precision) << fixed << cp.J				<< ")";
+	fns << "_g("					<< setprecision(precision) << fixed << cp.g				<< ")";
+	fns << "_max_num_seeds("		<< cp.max_num_seeds										<< ")";
+	fns << "_seed("					<< cp.seed												<< ")";
 	fns << ".txt";
 
 	return fns.str();

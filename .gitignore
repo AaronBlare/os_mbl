@@ -41,3 +41,13 @@
 cpp/QJ/QJ/Debug/
 
 *.log
+
+*.vcxproj
+
+*.db
+
+*.opendb
+
+data/transition_rates/cpp/
+
+data/transition_rates/matlab/

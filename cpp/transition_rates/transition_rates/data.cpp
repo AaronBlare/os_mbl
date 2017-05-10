@@ -77,6 +77,7 @@ int init_aux_data(ConfigData &cd)
 
 	return state_id;
 }
+
 void free_aux_data(ConfigData &cd)
 {
 	delete[] cd.adjacement;
@@ -104,7 +105,7 @@ void init_hamiltonian_data(ConfigData &cd, ConfigParam &cp)
 
 	if (cp.dump >= 2)
 	{
-		string hamiltonian_fn = "hamiltonian" + file_name_suffix(cp, 4);
+		string hamiltonian_fn = cp.path + "hamiltonian" + file_name_suffix(cp, 4);
 		cout << "save hamiltonian to file:" << endl << hamiltonian_fn << endl << endl;
 		write_double_data(hamiltonian_fn, cd.hamiltonian, cd.Ns * cd.Ns, 16);
 	}
@@ -112,6 +113,7 @@ void init_hamiltonian_data(ConfigData &cd, ConfigParam &cp)
 	time = omp_get_wtime() - time;
 	cout << "time of init hamiltonian: " << time << endl << endl;
 }
+
 void init_hamiltonian_disorder_data(ConfigData &cd, ConfigParam &cp)
 {
 	double * energies = new double[cd.Nc];
@@ -153,7 +155,7 @@ void init_hamiltonian_disorder_data(ConfigData &cd, ConfigParam &cp)
 		vslLeapfrogStream(stream, cp.seed, cp.max_num_seeds);
 		vdRngUniform(VSL_RNG_METHOD_UNIFORM_STD, stream, cd.Nc, energies, -1.0, 1.0);
 
-		string energies_fn = "energies" + file_name_suffix(cp, 4);
+		string energies_fn = cp.path + "energies" + file_name_suffix(cp, 4);
 		cout << "generate energies" << endl << "save energies to file:" << endl << energies_fn << endl << endl;
 		write_double_data(energies_fn, energies, cd.Nc, 16);
 	}
@@ -173,6 +175,7 @@ void init_hamiltonian_disorder_data(ConfigData &cd, ConfigParam &cp)
 
 	delete[] energies;
 }
+
 void init_hamiltonian_interaction_data(ConfigData &cd, ConfigParam &cp)
 {
 	for (int state_id = 0; state_id < cd.Ns; state_id++)
@@ -180,6 +183,7 @@ void init_hamiltonian_interaction_data(ConfigData &cd, ConfigParam &cp)
 		cd.hamiltonian[state_id * cd.Ns + state_id] += cp.U * bit_count(cd.id_to_x[state_id] & (cd.id_to_x[state_id] << 1));
 	}
 }
+
 void init_hamiltonian_hopping_data(ConfigData &cd, ConfigParam &cp)
 {
 	for (int state_id_1 = 0; state_id_1 < cd.Ns; state_id_1++)
@@ -190,6 +194,7 @@ void init_hamiltonian_hopping_data(ConfigData &cd, ConfigParam &cp)
 		}
 	}
 }
+
 void free_hamiltonian_data(ConfigData &cd)
 {
 	delete[] cd.hamiltonian;
@@ -236,14 +241,14 @@ void init_hamiltonian_eig_data(ConfigData &cd, ConfigParam &cp)
 
 	if (cp.dump >= 1)
 	{
-		string hamiltonian_eg_fn = "hamiltonian_eg" + file_name_suffix(cp, 4);
+		string hamiltonian_eg_fn = cp.path + "hamiltonian_eg" + file_name_suffix(cp, 4);
 		cout << "save hamiltonian eigen values to file:" << endl << hamiltonian_eg_fn << endl << endl;
 		write_double_data(hamiltonian_eg_fn, cd.hamiltonian_eg, cd.Ns, 16);
 	}
 
 	if (cp.dump >= 2)
 	{
-		string hamiltonian_ev_fn = "hamiltonian_ev" + file_name_suffix(cp, 4);
+		string hamiltonian_ev_fn = cp.path + "hamiltonian_ev" + file_name_suffix(cp, 4);
 		cout << "save hamiltonian eigen vectors to file:" << endl << hamiltonian_ev_fn << endl << endl;
 		write_double_data(hamiltonian_ev_fn, cd.hamiltonian_ev, cd.Ns * cd.Ns, 16);
 	}
@@ -251,6 +256,7 @@ void init_hamiltonian_eig_data(ConfigData &cd, ConfigParam &cp)
 	time = omp_get_wtime() - time;
 	cout << "time of solving hamiltonian eigenproblem: " << time << endl << endl;
 }
+
 void free_hamiltonian_eig_data(ConfigData &cd)
 {
 	delete[] cd.hamiltonian_ev;
@@ -411,7 +417,7 @@ void init_trans_rates_data(ConfigData &cd, ConfigParam &cp)
 
 	if (cp.dump >= 2)
 	{
-		string trans_rates_fn = "trans_rates" + file_name_suffix(cp, 4);
+		string trans_rates_fn = cp.path + "trans_rates" + file_name_suffix(cp, 4);
 		cout << "save trans rates to file:" << endl << trans_rates_fn << endl << endl;
 		write_double_data(trans_rates_fn, cd.trans_rates, cd.Ns * cd.Ns, 16);
 	}
@@ -419,6 +425,7 @@ void init_trans_rates_data(ConfigData &cd, ConfigParam &cp)
 	time = omp_get_wtime() - time;
 	cout << "time of creating trans rates matrix: " << time << endl << endl;
 }
+
 void free_trans_rates_data(ConfigData &cd)
 {
 	delete[] cd.trans_rates;
@@ -493,7 +500,7 @@ void init_diag_rho_data(ConfigData &cd, ConfigParam &cp)
 
 	if (cp.dump >= 1)
 	{
-		string diag_rho_in_st_fn = "diag_rho_in_st" + file_name_suffix(cp, 4);
+		string diag_rho_in_st_fn = cp.path + "diag_rho_in_st" + file_name_suffix(cp, 4);
 		cout << "save diag rho in stationary basis to file:" << endl << diag_rho_in_st_fn << endl << endl;
 		write_double_data(diag_rho_in_st_fn, cd.diag_rho_in_st, cd.Ns, 16);
 	}
@@ -571,14 +578,14 @@ void init_diag_rho_data(ConfigData &cd, ConfigParam &cp)
 
 	if (cp.dump >= 1)
 	{
-		string diag_rho_in_d_fn = "diag_rho_in_d" + file_name_suffix(cp, 4);
+		string diag_rho_in_d_fn = cp.path + "diag_rho_in_d" + file_name_suffix(cp, 4);
 		cout << "save diag rho in direct basis to file:" << endl << diag_rho_in_d_fn << endl << endl;
 		write_double_data(diag_rho_in_d_fn, cd.diag_rho_in_d, cd.Ns, 16);
 	}
 
 	if (cp.dump >= 2)
 	{
-		string rho_in_d_fn = "rho_in_d" + file_name_suffix(cp, 4);
+		string rho_in_d_fn = cp.path + "rho_in_d" + file_name_suffix(cp, 4);
 		cout << "save rho in direct basis to file:" << endl << rho_in_d_fn << endl << endl;
 		write_double_data(rho_in_d_fn, cd.rho_in_d, cd.Ns * cd.Ns, 16);
 	}
@@ -586,6 +593,7 @@ void init_diag_rho_data(ConfigData &cd, ConfigParam &cp)
 	time = omp_get_wtime() - time;
 	cout << "time of calculating rho: " << time << endl << endl;
 }
+
 void free_diag_rho_data(ConfigData &cd)
 {
 	delete[] cd.diag_rho_in_st;
@@ -648,7 +656,7 @@ void calculate_characteristics(ConfigData &cd, ConfigParam &cp)
 	characteristics[0] = cd.entropy;
 	characteristics[1] = cd.imbalance;
 
-	string characteristics_fn = "characteristics" + file_name_suffix(cp, 4);
+	string characteristics_fn = cp.path + "characteristics" + file_name_suffix(cp, 4);
 	cout << "save characteristics to file:" << endl << characteristics_fn << endl << endl;
 	write_double_data(characteristics_fn, characteristics, 2, 16);
 

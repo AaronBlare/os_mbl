@@ -88,6 +88,11 @@ void set_param(ConfigParam &param, string str, string value)
 	{
 		param.dump = atoi(value.c_str());
 	}
+
+	if (str.compare("path") == 0)
+	{
+		param.path = value;
+	}
 }
 
 void init_config_param(ConfigParam &param, char * file_name)
@@ -131,5 +136,6 @@ void output_setting(ConfigParam &param)
 	cout << "seed = " << param.seed						<< endl;
 	cout << "max_num_seeds = " << param.max_num_seeds	<< endl;
 	cout << "dump = " << param.dump						<< endl;
+	cout << "path = " << param.path						<< endl;
 	cout << "######################################"	<< endl;
 }

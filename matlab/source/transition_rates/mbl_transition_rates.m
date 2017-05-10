@@ -18,6 +18,16 @@ seed = input_data(9);
 
 dump_aux = input_data(10);
 
+dump_type = input_data(11); % 0 - local, 1 - cluster
+
+if dump_type == 0
+    data_path = '../../../data/transition_rates/matlab/';
+elseif dump_type == 1
+    data_path = '';
+else
+   error('Error: wrong dump_type');
+end
+
 Np = Nc/2; % number of particles
 Ns = nchoosek(Nc,Np); % number of states
 init = precalc_states(Nc, Np);
@@ -49,7 +59,7 @@ for k = 1:Ns
     Hd(k,k) = ( dec2bin(idtox(k), Nc) == '1' ) * E;
 end
 
-file_name = sprintf('random_energies_Nc(%d)_dt(%d)_alpha(%0.4f)_et(%d)_W(%0.4f)_U(%0.4f)_J(%0.4f)_gamma(%0.4f)_seed(%d).txt', Nc, diss_type, alpha, energy_type, W, U, J, g, seed);
+file_name = sprintf('%srandom_energies_Nc(%d)_dt(%d)_alpha(%0.4f)_et(%d)_W(%0.4f)_U(%0.4f)_J(%0.4f)_gamma(%0.4f)_seed(%d).txt', data_path, Nc, diss_type, alpha, energy_type, W, U, J, g, seed);
 file_id = fopen(file_name, 'w');
 for dump_id = 1:Nc
     fprintf(file_id, '%0.18e\n', E(dump_id));
@@ -79,12 +89,23 @@ end
 
 H = -J*Hh + U*Hi + 2.0*W*Hd;
 
+if(dump_aux >= 2)
+	file_name = sprintf('%shamiltonian_Nc(%d)_dt(%d)_alpha(%0.4f)_et(%d)_W(%0.4f)_U(%0.4f)_J(%0.4f)_gamma(%0.4f)_seed(%d).txt', data_path, Nc, diss_type, alpha, energy_type, W, U, J, g, seed);
+	file_id = fopen(file_name, 'w');
+	for state_id_1 = 1:Ns
+		for state_id_2 = 1:Ns
+			fprintf(file_id, '%0.18e\n', H(state_id_1, state_id_2));
+		end  
+	end
+	fclose(file_id);
+end
+
 [Ev,Eg] = eig(H); % Anderson modes
 
 Eg_diag = diag(Eg);
 
 if(dump_aux >= 1)
-    file_name = sprintf('eg_hamiltonian_Nc(%d)_dt(%d)_alpha(%0.4f)_et(%d)_W(%0.4f)_U(%0.4f)_J(%0.4f)_gamma(%0.4f)_seed(%d).txt', Nc, diss_type, alpha, energy_type, W, U, J, g, seed);
+    file_name = sprintf('%seg_hamiltonian_Nc(%d)_dt(%d)_alpha(%0.4f)_et(%d)_W(%0.4f)_U(%0.4f)_J(%0.4f)_gamma(%0.4f)_seed(%d).txt', data_path, Nc, diss_type, alpha, energy_type, W, U, J, g, seed);
     file_id = fopen(file_name, 'w');
     for state_id = 1:Ns
         fprintf(file_id, '%0.18e\n', Eg_diag(state_id));
@@ -93,7 +114,7 @@ if(dump_aux >= 1)
 end
 
 if(dump_aux >= 2)
-	file_name = sprintf('ev_hamiltonian_Nc(%d)_dt(%d)_alpha(%0.4f)_et(%d)_W(%0.4f)_U(%0.4f)_J(%0.4f)_gamma(%0.4f)_seed(%d).txt', Nc, diss_type, alpha, energy_type, W, U, J, g, seed);
+	file_name = sprintf('%sev_hamiltonian_Nc(%d)_dt(%d)_alpha(%0.4f)_et(%d)_W(%0.4f)_U(%0.4f)_J(%0.4f)_gamma(%0.4f)_seed(%d).txt', data_path, Nc, diss_type, alpha, energy_type, W, U, J, g, seed);
 	file_id = fopen(file_name, 'w');
 	for state_id_1 = 1:Ns
 		for state_id_2 = 1:Ns
@@ -106,7 +127,7 @@ end
 participation = 1./sum(abs(Ev).^4,1);
 
 if(dump_aux >= 2)
-    file_name = sprintf('participation_Nc(%d)_dt(%d)_alpha(%0.4f)_et(%d)_W(%0.4f)_U(%0.4f)_J(%0.4f)_gamma(%0.4f)_seed(%d).txt', Nc, diss_type, alpha, energy_type, W, U, J, g, seed);
+    file_name = sprintf('%sparticipation_Nc(%d)_dt(%d)_alpha(%0.4f)_et(%d)_W(%0.4f)_U(%0.4f)_J(%0.4f)_gamma(%0.4f)_seed(%d).txt', data_path, Nc, diss_type, alpha, energy_type, W, U, J, g, seed);
     file_id = fopen(file_name, 'w');
     for state_id = 1:Ns
         fprintf(file_id, '%0.18e\n', participation(state_id));
@@ -162,7 +183,7 @@ for ik=1:Ns
 end
 
 if(dump_aux >= 2)
-	file_name = sprintf('transition_rates_Nc(%d)_dt(%d)_alpha(%0.4f)_et(%d)_W(%0.4f)_U(%0.4f)_J(%0.4f)_gamma(%0.4f)_seed(%d).txt', Nc, diss_type, alpha, energy_type, W, U, J, g, seed);
+	file_name = sprintf('%stransition_rates_Nc(%d)_dt(%d)_alpha(%0.4f)_et(%d)_W(%0.4f)_U(%0.4f)_J(%0.4f)_gamma(%0.4f)_seed(%d).txt', data_path, Nc, diss_type, alpha, energy_type, W, U, J, g, seed);
 	file_id = fopen(file_name, 'w');
 	for state_id_1 = 1:Ns
 		for state_id_2 = 1:Ns
@@ -176,7 +197,7 @@ end
 TRev = TRev / sum(TRev);
 
 if(dump_aux >= 1)
-    file_name = sprintf('rho_diag_in_stationary_basis_Nc(%d)_dt(%d)_alpha(%0.4f)_et(%d)_W(%0.4f)_U(%0.4f)_J(%0.4f)_gamma(%0.4f)_seed(%d).txt', Nc, diss_type, alpha, energy_type, W, U, J, g, seed);
+    file_name = sprintf('%srho_diag_in_stationary_basis_Nc(%d)_dt(%d)_alpha(%0.4f)_et(%d)_W(%0.4f)_U(%0.4f)_J(%0.4f)_gamma(%0.4f)_seed(%d).txt', data_path, Nc, diss_type, alpha, energy_type, W, U, J, g, seed);
     file_id = fopen(file_name, 'w');
     for state_id = 1:Ns
         fprintf(file_id, '%0.18e\n', TRev(state_id));
@@ -187,7 +208,7 @@ end
 rho_in_direct_basis = Ev * diag(TRev) * Ev';
 
 if(dump_aux >= 1)
-    file_name = sprintf('rho_diag_in_direct_basis_Nc(%d)_dt(%d)_alpha(%0.4f)_et(%d)_W(%0.4f)_U(%0.4f)_J(%0.4f)_gamma(%0.4f)_seed(%d).txt', Nc, diss_type, alpha, energy_type, W, U, J, g, seed);
+    file_name = sprintf('%srho_diag_in_direct_basis_Nc(%d)_dt(%d)_alpha(%0.4f)_et(%d)_W(%0.4f)_U(%0.4f)_J(%0.4f)_gamma(%0.4f)_seed(%d).txt', data_path, Nc, diss_type, alpha, energy_type, W, U, J, g, seed);
     file_id = fopen(file_name, 'w');
     for state_id = 1:Ns
         fprintf(file_id, '%0.18e\n', rho_in_direct_basis(state_id, state_id));
@@ -202,13 +223,13 @@ for k = 1:Ns
 end
 imbalance = sum(n_part(1:2:Nc-1) - n_part(2:2:Nc)) / sum(n_part);
 
-file_name = sprintf('characteristics_Nc(%d)_dt(%d)_alpha(%0.4f)_et(%d)_W(%0.4f)_U(%0.4f)_J(%0.4f)_gamma(%0.4f)_seed(%d).txt', Nc, diss_type, alpha, energy_type, W, U, J, g, seed);
+file_name = sprintf('%scharacteristics_Nc(%d)_dt(%d)_alpha(%0.4f)_et(%d)_W(%0.4f)_U(%0.4f)_J(%0.4f)_gamma(%0.4f)_seed(%d).txt', data_path, Nc, diss_type, alpha, energy_type, W, U, J, g, seed);
 file_id = fopen(file_name, 'w');
 fprintf(file_id, '%0.18e %0.18e', entropy, imbalance);
 fclose(file_id);
 
 if(dump_aux >= 2)
-	file_name = sprintf('rho_in_direct_basis_Nc(%d)_dt(%d)_alpha(%0.4f)_et(%d)_W(%0.4f)_U(%0.4f)_J(%0.4f)_gamma(%0.4f)_seed(%d).txt', Nc, diss_type, alpha, energy_type, W, U, J, g, seed);
+	file_name = sprintf('%srho_in_direct_basis_Nc(%d)_dt(%d)_alpha(%0.4f)_et(%d)_W(%0.4f)_U(%0.4f)_J(%0.4f)_gamma(%0.4f)_seed(%d).txt', data_path, Nc, diss_type, alpha, energy_type, W, U, J, g, seed);
 	file_id = fopen(file_name, 'w');
 	for state_id_1 = 1:Ns
 		for state_id_2 = 1:Ns

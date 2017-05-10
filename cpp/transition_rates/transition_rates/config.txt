@@ -1,12 +1,13 @@
-Nc 12
-W 10.0
+Nc 8
+W 8.0
 U 1.0
 J 1.0
 g 0.1
 dt 1
-alpha 3.0
+alpha 1.0
 et 0
-init 0
+init ../../../data/transition_rates/matlab/random_energies_Nc(8)_dt(1)_alpha(1.0000)_et(0)_W(8.0000)_U(1.0000)_J(1.0000)_gamma(0.1000)_seed(1337).txt
 seed 1
 max_num_seeds 1000
 dump 2
+path ../../../data/transition_rates/cpp/

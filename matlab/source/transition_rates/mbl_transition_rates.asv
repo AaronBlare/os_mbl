@@ -18,6 +18,16 @@ seed = input_data(9);
 
 dump_aux = input_data(10);
 
+dump_type = input_data(11); % 0 - local, 1 - cluster
+
+if dump_type == 0
+    data_path = '../../../data/transition_rates/';
+elseif dump_type == 1
+    data_path = '';
+else
+   error('Error: wrong dump_type');
+end
+
 Np = Nc/2; % number of particles
 Ns = nchoosek(Nc,Np); % number of states
 init = precalc_states(Nc, Np);
@@ -49,7 +59,7 @@ for k = 1:Ns
     Hd(k,k) = ( dec2bin(idtox(k), Nc) == '1' ) * E;
 end
 
-file_name = sprintf('random_energies_Nc(%d)_dt(%d)_alpha(%0.4f)_et(%d)_W(%0.4f)_U(%0.4f)_J(%0.4f)_gamma(%0.4f)_seed(%d).txt', Nc, diss_type, alpha, energy_type, W, U, J, g, seed);
+file_name = sprintf('$s/random_energies_Nc(%d)_dt(%d)_alpha(%0.4f)_et(%d)_W(%0.4f)_U(%0.4f)_J(%0.4f)_gamma(%0.4f)_seed(%d).txt', Nc, diss_type, alpha, energy_type, W, U, J, g, seed);
 file_id = fopen(file_name, 'w');
 for dump_id = 1:Nc
     fprintf(file_id, '%0.18e\n', E(dump_id));
@@ -105,7 +115,7 @@ end
 
 participation = 1./sum(abs(Ev).^4,1);
 
-if(dump_aux >= 1)
+if(dump_aux >= 2)
     file_name = sprintf('participation_Nc(%d)_dt(%d)_alpha(%0.4f)_et(%d)_W(%0.4f)_U(%0.4f)_J(%0.4f)_gamma(%0.4f)_seed(%d).txt', Nc, diss_type, alpha, energy_type, W, U, J, g, seed);
     file_id = fopen(file_name, 'w');
     for state_id = 1:Ns

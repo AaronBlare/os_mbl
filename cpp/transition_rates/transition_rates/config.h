@@ -22,17 +22,18 @@ struct ConfigParam
 	double	J;				// hopping
 	double	g;				// dissipation
 	int		dt;				// dissipator type
-	double alpha;			// Diehl dissipator phase
+	double	alpha;			// Diehl dissipator phase
 	int		et;				// energy type
 	string	init;			// random init file
 	int		seed;			// random seed
 	int		max_num_seeds;	// max num of seeds
 	int		dump;			// dump type
+	string  path;
 
 	ConfigParam(
 		int		_Nc			= 10,
 		double	_W			= 8.0,
-		double	_U			= 2.0,
+		double	_U			= 1.0,
 		double	_J			= 1.0,
 		double	_g			= 0.1,
 		int		_dt			= 1,
@@ -41,7 +42,8 @@ struct ConfigParam
 		string _init		= "",
 		int		_seed		= 1,
 		int _max_num_seeds	= 10000,
-		int		_dump		= 0
+		int		_dump		= 0,
+		string _path		= ""
 		)
 	{
 		Nc			= _Nc;
@@ -56,6 +58,7 @@ struct ConfigParam
 		seed		= _seed;
 		max_num_seeds	= _max_num_seeds;
 		dump		= _dump;
+		path = _path;
 	}
 };
 
