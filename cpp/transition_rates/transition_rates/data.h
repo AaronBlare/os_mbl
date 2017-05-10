@@ -13,14 +13,14 @@ struct ConfigData
 	int * x_to_id;		// aux array for id definition from binary representation
 	int * id_to_x;		// aux array for binary representation definition from id
 
-	MKL_Complex16 * hamiltonian;		// hamiltonian
-	MKL_Complex16 * hamiltonian_ev;		// eigen vectors of hamiltonian
+	double * hamiltonian;		// hamiltonian
+	double * hamiltonian_ev;		// eigen vectors of hamiltonian
 	double * hamiltonian_eg;		// eigen values of hamiltonian
 
-	MKL_Complex16 * trans_rates;	// transition rates matrix
+	double * trans_rates;	// transition rates matrix
 
 	double * diag_rho_in_st;			// diag of matrix rho in stationary basis
-	MKL_Complex16 * rho_in_d;			// rho in direct basis
+	double * rho_in_d;			// rho in direct basis
 	double * diag_rho_in_d;				// diag of matrix rho in direct basis
 	double entropy;						// entropy of asymptotic state
 	double imbalance;					// entropy of asymptotic state

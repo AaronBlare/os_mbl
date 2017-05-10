@@ -88,14 +88,13 @@ void init_hamiltonian_data(ConfigData &cd, ConfigParam &cp)
 {
 	double time = omp_get_wtime();
 
-	cd.hamiltonian = new MKL_Complex16[cd.Ns * cd.Ns];
+	cd.hamiltonian = new double[cd.Ns * cd.Ns];
 
 	for (int state_id_1 = 0; state_id_1 < cd.Ns; state_id_1 ++)
 	{
 		for (int state_id_2 = 0; state_id_2 < cd.Ns; state_id_2 ++)
 		{
-			cd.hamiltonian[state_id_1 * cd.Ns + state_id_2].real = 0.0;
-			cd.hamiltonian[state_id_1 * cd.Ns + state_id_2].imag = 0.0;
+			cd.hamiltonian[state_id_1 * cd.Ns + state_id_2] = 0.0;
 		}
 	}
 
@@ -107,7 +106,7 @@ void init_hamiltonian_data(ConfigData &cd, ConfigParam &cp)
 	{
 		string hamiltonian_fn = "hamiltonian" + file_name_suffix(cp, 4);
 		cout << "save hamiltonian to file:" << endl << hamiltonian_fn << endl << endl;
-		write_complex_data(hamiltonian_fn, cd.hamiltonian, cd.Ns * cd.Ns, 16);
+		write_double_data(hamiltonian_fn, cd.hamiltonian, cd.Ns * cd.Ns, 16);
 	}
 
 	time = omp_get_wtime() - time;
@@ -169,8 +168,7 @@ void init_hamiltonian_disorder_data(ConfigData &cd, ConfigParam &cp)
 		}
 		sum *= 2.0 * cp.W;
 
-		cd.hamiltonian[state_id * cd.Ns + state_id].real += sum;
-		cd.hamiltonian[state_id * cd.Ns + state_id].imag += 0.0;
+		cd.hamiltonian[state_id * cd.Ns + state_id] += sum;
 	}
 
 	delete[] energies;
@@ -179,8 +177,7 @@ void init_hamiltonian_interaction_data(ConfigData &cd, ConfigParam &cp)
 {
 	for (int state_id = 0; state_id < cd.Ns; state_id++)
 	{
-		cd.hamiltonian[state_id * cd.Ns + state_id].real += cp.U * bit_count(cd.id_to_x[state_id] & (cd.id_to_x[state_id] << 1));
-		cd.hamiltonian[state_id * cd.Ns + state_id].imag += 0.0;
+		cd.hamiltonian[state_id * cd.Ns + state_id] += cp.U * bit_count(cd.id_to_x[state_id] & (cd.id_to_x[state_id] << 1));
 	}
 }
 void init_hamiltonian_hopping_data(ConfigData &cd, ConfigParam &cp)
@@ -189,8 +186,7 @@ void init_hamiltonian_hopping_data(ConfigData &cd, ConfigParam &cp)
 	{
 		for (int state_id_2 = 0; state_id_2 < cd.Ns; state_id_2++)
 		{
-			cd.hamiltonian[state_id_1 * cd.Ns + state_id_2].real -= cp.J * cd.adjacement[cd.id_to_x[state_id_1] ^ cd.id_to_x[state_id_2]];
-			cd.hamiltonian[state_id_1 * cd.Ns + state_id_2].imag -= 0.0;	
+			cd.hamiltonian[state_id_1 * cd.Ns + state_id_2] -= cp.J * cd.adjacement[cd.id_to_x[state_id_1] ^ cd.id_to_x[state_id_2]];	
 		}
 	}
 }
@@ -203,13 +199,13 @@ void init_hamiltonian_eig_data(ConfigData &cd, ConfigParam &cp)
 {
 	double time = omp_get_wtime();
 
-	cd.hamiltonian_ev	= new MKL_Complex16[cd.Ns * cd.Ns];
+	cd.hamiltonian_ev	= new double[cd.Ns * cd.Ns];
 	cd.hamiltonian_eg	= new double[cd.Ns];
 
 	int founded_eigen_vals = 0;
-	int * isuppz = new int[2 * cd.Ns]; 
+	int * isuppz = new int[2 * cd.Ns];
 
-	int info = LAPACKE_zheevr(
+	int info = LAPACKE_dsyevr(
 		LAPACK_ROW_MAJOR,
 		'V',
 		'A',
@@ -249,7 +245,7 @@ void init_hamiltonian_eig_data(ConfigData &cd, ConfigParam &cp)
 	{
 		string hamiltonian_ev_fn = "hamiltonian_ev" + file_name_suffix(cp, 4);
 		cout << "save hamiltonian eigen vectors to file:" << endl << hamiltonian_ev_fn << endl << endl;
-		write_complex_data(hamiltonian_ev_fn, cd.hamiltonian_ev, cd.Ns * cd.Ns, 16);
+		write_double_data(hamiltonian_ev_fn, cd.hamiltonian_ev, cd.Ns * cd.Ns, 16);
 	}
 
 	time = omp_get_wtime() - time;
@@ -265,14 +261,18 @@ void init_trans_rates_data(ConfigData &cd, ConfigParam &cp)
 {
 	double time = omp_get_wtime();
 
-	cd.trans_rates = new MKL_Complex16[cd.Ns * cd.Ns];
+	cd.trans_rates = new double[cd.Ns * cd.Ns];
+	
+	MKL_Complex16 * hamiltonian_ev_complex = new MKL_Complex16[cd.Ns * cd.Ns];
 
 	for (int state_id_1 = 0; state_id_1 < cd.Ns; state_id_1++)
 	{
 		for (int state_id_2 = 0; state_id_2 < cd.Ns; state_id_2++)
 		{
-			cd.trans_rates[state_id_1 * cd.Ns + state_id_2].real = 0.0;
-			cd.trans_rates[state_id_1 * cd.Ns + state_id_2].imag = 0.0;
+			cd.trans_rates[state_id_1 * cd.Ns + state_id_2] = 0.0;
+
+			hamiltonian_ev_complex[state_id_1 * cd.Ns + state_id_2].real = cd.hamiltonian_ev[state_id_1 * cd.Ns + state_id_2];
+			hamiltonian_ev_complex[state_id_1 * cd.Ns + state_id_2].imag = 0.0;
 		}
 	}
 
@@ -354,7 +354,7 @@ void init_trans_rates_data(ConfigData &cd, ConfigParam &cp)
 			cd.Ns,
 			cd.Ns,
 			&ONE,
-			cd.hamiltonian_ev,
+			hamiltonian_ev_complex,
 			cd.Ns,
 			tmp_1,
 			cd.Ns,
@@ -373,7 +373,7 @@ void init_trans_rates_data(ConfigData &cd, ConfigParam &cp)
 			&ONE,
 			tmp_2,
 			cd.Ns,
-			cd.hamiltonian_ev,
+			hamiltonian_ev_complex,
 			cd.Ns,
 			&ZERO,
 			tmp_1,
@@ -384,14 +384,16 @@ void init_trans_rates_data(ConfigData &cd, ConfigParam &cp)
 		{
 			for (int state_id_2 = 0; state_id_2 < cd.Ns; state_id_2++)
 			{
-				cd.trans_rates[state_id_1 * cd.Ns + state_id_2].real += cp.g * (tmp_1[state_id_1 * cd.Ns + state_id_2].real * tmp_1[state_id_1 * cd.Ns + state_id_2].real + tmp_1[state_id_1 * cd.Ns + state_id_2].imag * tmp_1[state_id_1 * cd.Ns + state_id_2].imag);
-				cd.trans_rates[state_id_1 * cd.Ns + state_id_2].imag += cp.g * 0.0;
+				cd.trans_rates[state_id_1 * cd.Ns + state_id_2] += cp.g * (tmp_1[state_id_1 * cd.Ns + state_id_2].real * tmp_1[state_id_1 * cd.Ns + state_id_2].real + tmp_1[state_id_1 * cd.Ns + state_id_2].imag * tmp_1[state_id_1 * cd.Ns + state_id_2].imag);
 			}
 		}
 	}
 
+	delete[] hamiltonian_ev_complex;
+
 	delete[] tmp_2;
 	delete[] tmp_1;
+
 
 	double * column_sums = new double[cd.Ns];
 	for (int state_id_2 = 0; state_id_2 < cd.Ns; state_id_2++)
@@ -400,10 +402,10 @@ void init_trans_rates_data(ConfigData &cd, ConfigParam &cp)
 
 		for (int state_id_1 = 0; state_id_1 < cd.Ns; state_id_1++)
 		{
-			column_sums[state_id_2] += cd.trans_rates[state_id_1 * cd.Ns + state_id_2].real;
+			column_sums[state_id_2] += cd.trans_rates[state_id_1 * cd.Ns + state_id_2];
 		}
 
-		cd.trans_rates[state_id_2 * cd.Ns + state_id_2].real -= column_sums[state_id_2];
+		cd.trans_rates[state_id_2 * cd.Ns + state_id_2] -= column_sums[state_id_2];
 	}
 	delete[] column_sums;
 
@@ -411,7 +413,7 @@ void init_trans_rates_data(ConfigData &cd, ConfigParam &cp)
 	{
 		string trans_rates_fn = "trans_rates" + file_name_suffix(cp, 4);
 		cout << "save trans rates to file:" << endl << trans_rates_fn << endl << endl;
-		write_complex_data(trans_rates_fn, cd.trans_rates, cd.Ns * cd.Ns, 16);
+		write_double_data(trans_rates_fn, cd.trans_rates, cd.Ns * cd.Ns, 16);
 	}
 
 	time = omp_get_wtime() - time;
@@ -428,23 +430,26 @@ void init_diag_rho_data(ConfigData &cd, ConfigParam &cp)
 
 	cd.diag_rho_in_st = new double[cd.Ns];
 	cd.diag_rho_in_d = new double[cd.Ns];
-	cd.rho_in_d = new MKL_Complex16[cd.Ns * cd.Ns];
+	cd.rho_in_d = new double[cd.Ns * cd.Ns];
 
-	MKL_Complex16 * eg = new MKL_Complex16[cd.Ns];
-	MKL_Complex16 * ev = new MKL_Complex16[cd.Ns * cd.Ns];
+	double * eg_real = new double[cd.Ns];
+	double * eg_imag = new double[cd.Ns];
+	double * ev = new double[cd.Ns * cd.Ns];
 
-	int info = LAPACKE_zgeev(
+	int info = LAPACKE_dgeev( 
 		LAPACK_ROW_MAJOR,
 		'N',
 		'V',
 		cd.Ns,
-		(MKL_Complex16 *) cd.trans_rates, 
-		cd.Ns, 
-		(MKL_Complex16 *) eg,
-		NULL, 
+		cd.trans_rates,
 		cd.Ns,
-		(MKL_Complex16 *) ev,
-		cd.Ns);
+		eg_real,
+		eg_imag,
+		NULL,
+		cd.Ns,
+		ev,
+		cd.Ns
+		);
 
 	if( info > 0 ) 
 	{
@@ -453,39 +458,30 @@ void init_diag_rho_data(ConfigData &cd, ConfigParam &cp)
 		Error(msg.str());
 	}
 
-	vector<double> eg_abs;
+	vector<double> eg_reals_vec;
 	for (int state_id = 0; state_id < cd.Ns; state_id++)
 	{
-		eg_abs.push_back(sqrt(eg[state_id].real * eg[state_id].real + eg[state_id].imag * eg[state_id].imag));
+		eg_reals_vec.push_back(fabs(eg_real[state_id]));
 	}
 
-	vector<int> order = sort_doubles_with_order(eg_abs);
+	vector<int> order = sort_doubles_with_order(eg_reals_vec);
 
-	eg_abs.clear();
+	eg_reals_vec.clear();
 
-	if (eg[order[0]].imag > EPS)
+	if (eg_imag[order[0]] > EPS)
 	{
-		cout << "zero eg is complex: " << eg[order[0]].real << " + " << eg[order[0]].imag << " i" << endl;
+		cout << "zero eg is complex: " << eg_real[order[0]] << " + " << eg_imag[order[0]] << " i" << endl;
+		stringstream msg;
+		msg << "diag rho must be non-complex "<< endl;
+		Error(msg.str());
 	}
-	else
-	{
-		cout << "zero eg: " << eg[order[0]].real << endl;
-	}
+
 
 	double sum = 0.0;
 	for (int state_id = 0; state_id < cd.Ns; state_id++)
 	{
-		if (abs(ev[state_id * cd.Ns + order[0]].imag) < EPS)
-		{
-			cd.diag_rho_in_st[state_id] = ev[state_id * cd.Ns + order[0]].real;
-			sum += cd.diag_rho_in_st[state_id];
-		}
-		else
-		{
-			stringstream msg;
-			msg << "diag rho must be non-complex "<< endl;
-			Error(msg.str());
-		}	
+		cd.diag_rho_in_st[state_id] = ev[state_id * cd.Ns + order[0]];
+		sum += cd.diag_rho_in_st[state_id];
 	}
 
 	order.clear();
@@ -503,61 +499,59 @@ void init_diag_rho_data(ConfigData &cd, ConfigParam &cp)
 	}
 
 	delete[] ev;
-	delete[] eg;
+	delete[] eg_real;
+	delete[] eg_imag;
 
-	MKL_Complex16 * tmp_1 = new MKL_Complex16[cd.Ns * cd.Ns]; // rho diag in stationary basis and final result 
-	MKL_Complex16 * tmp_2 = new MKL_Complex16[cd.Ns * cd.Ns]; // intermediate result
+	double * tmp_1 = new double[cd.Ns * cd.Ns]; // rho diag in stationary basis and final result 
+	double * tmp_2 = new double[cd.Ns * cd.Ns]; // intermediate result
 
 	for (int state_id_1 = 0; state_id_1 < cd.Ns; state_id_1++)
 	{
 		for (int state_id_2 = 0; state_id_2 < cd.Ns; state_id_2++)
 		{
-			tmp_1[state_id_1 * cd.Ns + state_id_2].real = 0.0;
-			tmp_1[state_id_1 * cd.Ns + state_id_2].imag = 0.0;
-
-			tmp_2[state_id_1 * cd.Ns + state_id_2].real = 0.0;
-			tmp_2[state_id_1 * cd.Ns + state_id_2].imag = 0.0;
+			tmp_1[state_id_1 * cd.Ns + state_id_2] = 0.0;
+			tmp_2[state_id_1 * cd.Ns + state_id_2] = 0.0;
 		}
 	}
 
 	for (int state_id = 0; state_id < cd.Ns; state_id++)
 	{
-		tmp_1[state_id * cd.Ns + state_id].real = cd.diag_rho_in_st[state_id];
+		tmp_1[state_id * cd.Ns + state_id] = cd.diag_rho_in_st[state_id];
 	}
 
-	MKL_Complex16 ZERO	= {0.0, 0.0};
-	MKL_Complex16 ONE	= {1.0, 0.0};
+	double ZERO	= 0.0;
+	double ONE = 1.0;
 
-	cblas_zgemm(
+	cblas_dgemm(
 		CblasRowMajor,
 		CblasNoTrans,
 		CblasNoTrans,
 		cd.Ns,
 		cd.Ns,
 		cd.Ns,
-		&ONE,
+		ONE,
 		cd.hamiltonian_ev,
 		cd.Ns,
 		tmp_1,
 		cd.Ns,
-		&ZERO,
+		ZERO,
 		tmp_2,
 		cd.Ns
 		);
 
-	cblas_zgemm(
+	cblas_dgemm(
 		CblasRowMajor,
 		CblasNoTrans,
 		CblasConjTrans,
 		cd.Ns,
 		cd.Ns,
 		cd.Ns,
-		&ONE,
+		ONE,
 		tmp_2,
 		cd.Ns,
 		cd.hamiltonian_ev,
 		cd.Ns,
-		&ZERO,
+		ZERO,
 		tmp_1,
 		cd.Ns
 		);
@@ -566,20 +560,10 @@ void init_diag_rho_data(ConfigData &cd, ConfigParam &cp)
 	{
 		for (int state_id_2 = 0; state_id_2 < cd.Ns; state_id_2++)
 		{
-			cd.rho_in_d[state_id_1 * cd.Ns + state_id_2].real = tmp_1[state_id_1 * cd.Ns + state_id_2].real;
-			cd.rho_in_d[state_id_1 * cd.Ns + state_id_2].imag = tmp_1[state_id_1 * cd.Ns + state_id_2].imag;
+			cd.rho_in_d[state_id_1 * cd.Ns + state_id_2] = tmp_1[state_id_1 * cd.Ns + state_id_2];
 		}
 
-		if (abs(tmp_1[state_id_1 * cd.Ns + state_id_1].imag) < EPS)
-		{
-			cd.diag_rho_in_d[state_id_1] = tmp_1[state_id_1 * cd.Ns + state_id_1].real;
-		}
-		else
-		{
-			stringstream msg;
-			msg << "diag rho must be non-complex "<< endl;
-			Error(msg.str());
-		}	
+		cd.diag_rho_in_d[state_id_1] = tmp_1[state_id_1 * cd.Ns + state_id_1];	
 	}
 
 	delete[] tmp_1;
@@ -596,7 +580,7 @@ void init_diag_rho_data(ConfigData &cd, ConfigParam &cp)
 	{
 		string rho_in_d_fn = "rho_in_d" + file_name_suffix(cp, 4);
 		cout << "save rho in direct basis to file:" << endl << rho_in_d_fn << endl << endl;
-		write_complex_data(rho_in_d_fn, cd.rho_in_d, cd.Ns * cd.Ns, 16);
+		write_double_data(rho_in_d_fn, cd.rho_in_d, cd.Ns * cd.Ns, 16);
 	}
 
 	time = omp_get_wtime() - time;
@@ -634,7 +618,7 @@ void calculate_characteristics(ConfigData &cd, ConfigParam &cp)
 
 		for (int cell_id = 0; cell_id < cd.Nc; cell_id++)
 		{
-			n_part[cell_id] += cd.rho_in_d[state_id * cd.Ns + state_id].real * double(vb[cell_id]);
+			n_part[cell_id] += cd.rho_in_d[state_id * cd.Ns + state_id] * double(vb[cell_id]);
 		}
 	}
 
