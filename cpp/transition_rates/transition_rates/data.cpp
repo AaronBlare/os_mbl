@@ -1,6 +1,6 @@
 #include "data.h"
 
-void run_experiment(ConfigData &cd, ConfigParam &cp)
+void run_trans_rates(ConfigData &cd, ConfigParam &cp)
 {
 	cd.Nc = cp.Nc;
 
@@ -38,6 +38,44 @@ void run_experiment(ConfigData &cd, ConfigParam &cp)
 	free_aux_data(cd);
 	free_diag_rho_data(cd);
 }
+
+void run_zero_eigen_vector(ConfigData &cd, ConfigParam &cp)
+{
+	cd.Nc = cp.Nc;
+
+	if (cd.Nc % 2 != 0)
+	{
+		stringstream msg;
+		msg << "Nc must divide by 2 without any remainder" << endl;
+		Error(msg.str());
+	}
+
+	cd.Np = cd.Nc / 2;
+	cd.Ns = n_choose_k(cd.Nc, cd.Np);
+
+	cout << "num states = " << cd.Ns << endl;
+
+	int num_states = init_aux_data(cd);
+
+	if (cd.Ns != num_states)
+	{
+		stringstream msg;
+		msg << "wrong num states calculation" << endl;
+		Error(msg.str());
+	}
+
+	init_hamiltonian_data(cd, cp);
+	init_hamiltonian_eig_data(cd, cp);
+
+	init_libladian(cd, cp);
+	free_libladian(cd, cp);
+
+	free_hamiltonian_data(cd);
+	free_hamiltonian_eig_data(cd);
+	free_aux_data(cd);
+}
+
+
 
 int init_aux_data(ConfigData &cd)
 {
@@ -204,6 +242,15 @@ void init_hamiltonian_eig_data(ConfigData &cd, ConfigParam &cp)
 {
 	double time = omp_get_wtime();
 
+	double * hamiltonian_copy = new double[cd.Ns * cd.Ns];
+	for (int state_id_1 = 0; state_id_1 < cd.Ns; state_id_1++)
+	{
+		for (int state_id_2 = 0; state_id_2 < cd.Ns; state_id_2++)
+		{
+			hamiltonian_copy[state_id_1 * cd.Ns + state_id_2] = cd.hamiltonian[state_id_1 * cd.Ns + state_id_2];
+		}
+	}
+
 	cd.hamiltonian_ev	= new double[cd.Ns * cd.Ns];
 	cd.hamiltonian_eg	= new double[cd.Ns];
 
@@ -216,7 +263,7 @@ void init_hamiltonian_eig_data(ConfigData &cd, ConfigParam &cp)
 		'A',
 		'U',
 		cd.Ns,
-		cd.hamiltonian,
+		hamiltonian_copy,
 		cd.Ns,
 		0,
 		0,
@@ -231,6 +278,8 @@ void init_hamiltonian_eig_data(ConfigData &cd, ConfigParam &cp)
 		);
 
 	delete[] isuppz;
+
+	delete[] hamiltonian_copy;
 
 	if( info > 0 ) 
 	{
@@ -664,4 +713,242 @@ void calculate_characteristics(ConfigData &cd, ConfigParam &cp)
 
 	time = omp_get_wtime() - time;
 	cout << "time of calculating characteristics: " << time << endl << endl;
+}
+
+void init_libladian(ConfigData & cd, ConfigParam & cp)
+{
+	double time = omp_get_wtime();
+
+	MKL_Complex16 ZERO = { 0.0, 0.0 };
+	MKL_Complex16 ONE = { 1.0, 0.0 };
+
+	cd.lindbladian = new MKL_Complex16[cd.Ns*cd.Ns * cd.Ns*cd.Ns];
+	MKL_Complex16 * mtx_aux_1 = new MKL_Complex16[cd.Ns*cd.Ns * cd.Ns*cd.Ns];
+	MKL_Complex16 * mtx_aux_2 = new MKL_Complex16[cd.Ns*cd.Ns * cd.Ns*cd.Ns];
+	MKL_Complex16 * mtx_aux_mult = new MKL_Complex16[cd.Ns*cd.Ns * cd.Ns*cd.Ns];
+	
+	double * eye = new double[cd.Ns * cd.Ns];
+	MKL_Complex16 * diss = new MKL_Complex16[cd.Ns * cd.Ns];
+	MKL_Complex16 * diss_conj = new MKL_Complex16[cd.Ns * cd.Ns];
+	MKL_Complex16 * diss_mult = new MKL_Complex16[cd.Ns * cd.Ns];
+	for (int state_id_1 = 0; state_id_1 < cd.Ns; state_id_1++)
+	{
+		for (int state_id_2 = 0; state_id_2 < cd.Ns; state_id_2++)
+		{
+			if (state_id_1 == state_id_2)
+			{
+				eye[state_id_1 * cd.Ns + state_id_2] = 1.0;
+			}
+			else
+			{
+				eye[state_id_1 * cd.Ns + state_id_2] = 0.0;
+			}
+		}
+	}
+
+	int dim = cd.Ns * cd.Ns;
+	int row = 0;
+	int col = 0;
+	MKL_Complex16 term;
+
+	for (int block_id_1 = 0; block_id_1 < cd.Ns; block_id_1++)
+	{
+		for (int block_id_2 = 0; block_id_2 < cd.Ns; block_id_2++)
+		{
+			for (int state_id_1 = 0; state_id_1 < cd.Ns; state_id_1++)
+			{
+				for (int state_id_2 = 0; state_id_2 < cd.Ns; state_id_2++)
+				{
+					row = block_id_1 * cd.Ns + state_id_1;
+					col = block_id_2 * cd.Ns + state_id_2;
+
+					cd.lindbladian[row * dim + col].real = 0.0;
+					cd.lindbladian[row * dim + col].imag = - (eye[block_id_1 * cd.Ns + block_id_2] * cd.hamiltonian[state_id_1 * cd.Ns + state_id_2] - cd.hamiltonian[block_id_2 * cd.Ns + block_id_1] * eye[state_id_1 * cd.Ns + state_id_2]);
+				}
+			}
+		}
+	}
+
+	for (int dissipator_id = 0; dissipator_id < cd.Nc - 1; dissipator_id++)
+	{
+		for (int state_id_1 = 0; state_id_1 < cd.Ns; state_id_1++)
+		{
+			for (int state_id_2 = 0; state_id_2 < cd.Ns; state_id_2++)
+			{
+				diss[state_id_1 * cd.Ns + state_id_2].real = 0.0;
+				diss[state_id_1 * cd.Ns + state_id_2].imag = 0.0;
+
+				diss_mult[state_id_1 * cd.Ns + state_id_2].real = 0.0;
+				diss_mult[state_id_1 * cd.Ns + state_id_2].imag = 0.0;
+			}
+		}
+
+		for (int state_id_1 = 0; state_id_1 < cd.Ns; state_id_1++)
+		{
+			diss[state_id_1 * cd.Ns + state_id_1].real = double(bit_at(cd.id_to_x[state_id_1], dissipator_id)) - double(bit_at(cd.id_to_x[state_id_1], dissipator_id + 1));
+			diss[state_id_1 * cd.Ns + state_id_1].imag = 0.0;
+
+			for (int state_id_2 = 0; state_id_2 < cd.Ns; state_id_2++)
+			{
+				if (cd.adjacement[cd.id_to_x[state_id_1] ^ cd.id_to_x[state_id_2]])
+				{
+					vector<int> adjacency_bits = convert_int_to_vector_of_bits(cd.id_to_x[state_id_1] ^ cd.id_to_x[state_id_2], cd.Nc);
+					vector<int> hop;
+					for (int cell_id = 0; cell_id < cd.Nc; cell_id++)
+					{
+						if (adjacency_bits[cell_id])
+						{
+							hop.push_back(cell_id);
+						}
+					}
+
+					for (int ad_cell_id = 0; ad_cell_id < hop.size(); ad_cell_id++)
+					{
+						hop[ad_cell_id] = (cd.Nc - 1) - hop[ad_cell_id];
+					}
+
+					if (hop[1] == dissipator_id)
+					{
+						if (bit_at(cd.id_to_x[state_id_1], dissipator_id))
+						{
+							diss[state_id_2 * cd.Ns + state_id_1].real = cos(cp.alpha);
+							diss[state_id_2 * cd.Ns + state_id_1].imag = sin(cp.alpha);
+
+							diss[state_id_1 * cd.Ns + state_id_2].real = -cos(-cp.alpha);
+							diss[state_id_1 * cd.Ns + state_id_2].imag = -sin(-cp.alpha);
+						}
+						else
+						{
+							diss[state_id_2 * cd.Ns + state_id_1].real = -cos(-cp.alpha);
+							diss[state_id_2 * cd.Ns + state_id_1].imag = -sin(-cp.alpha);
+
+							diss[state_id_1 * cd.Ns + state_id_2].real = cos(cp.alpha);
+							diss[state_id_1 * cd.Ns + state_id_2].imag = sin(cp.alpha);
+						}
+					}
+
+					adjacency_bits.clear();
+					hop.clear();
+				}
+			}
+		}
+
+		for (int state_id_1 = 0; state_id_1 < cd.Ns; state_id_1++)
+		{
+			for (int state_id_2 = 0; state_id_2 < cd.Ns; state_id_2++)
+			{
+				diss_conj[state_id_1 * cd.Ns + state_id_2].real = diss[state_id_2 * cd.Ns + state_id_1].real;
+				diss_conj[state_id_1 * cd.Ns + state_id_2].imag = -diss[state_id_2 * cd.Ns + state_id_1].imag;
+			}
+		}
+
+		cblas_zgemm(
+			CblasRowMajor,
+			CblasNoTrans,
+			CblasNoTrans,
+			cd.Ns,
+			cd.Ns,
+			cd.Ns,
+			&ONE,
+			diss_conj,
+			cd.Ns,
+			diss,
+			cd.Ns,
+			&ZERO,
+			diss_mult,
+			cd.Ns
+		);
+
+		for (int block_id_1 = 0; block_id_1 < cd.Ns; block_id_1++)
+		{
+			for (int block_id_2 = 0; block_id_2 < cd.Ns; block_id_2++)
+			{
+				for (int state_id_1 = 0; state_id_1 < cd.Ns; state_id_1++)
+				{
+					for (int state_id_2 = 0; state_id_2 < cd.Ns; state_id_2++)
+					{
+						row = block_id_1 * cd.Ns + state_id_1;
+						col = block_id_2 * cd.Ns + state_id_2;
+
+						mtx_aux_1[row * dim + col].real = eye[block_id_1 * cd.Ns + block_id_2] * diss[state_id_1 * cd.Ns + state_id_2].real;
+						mtx_aux_1[row * dim + col].imag = eye[block_id_1 * cd.Ns + block_id_2] * diss[state_id_1 * cd.Ns + state_id_2].imag;
+
+						mtx_aux_2[row * dim + col].real = diss_conj[block_id_2 * cd.Ns + block_id_1].real * eye[state_id_1 * cd.Ns + state_id_2];
+						mtx_aux_2[row * dim + col].imag = diss_conj[block_id_2 * cd.Ns + block_id_1].imag * eye[state_id_1 * cd.Ns + state_id_2];
+
+						mtx_aux_mult[row * dim + col].real = 0.0;
+						mtx_aux_mult[row * dim + col].imag = 0.0;
+					}
+				}
+			}
+		}
+
+		cblas_zgemm(
+			CblasRowMajor,
+			CblasNoTrans,
+			CblasNoTrans,
+			cd.Ns * cd.Ns,
+			cd.Ns * cd.Ns,
+			cd.Ns * cd.Ns,
+			&ONE,
+			mtx_aux_1,
+			cd.Ns * cd.Ns,
+			mtx_aux_2,
+			cd.Ns * cd.Ns,
+			&ZERO,
+			mtx_aux_mult,
+			cd.Ns * cd.Ns
+		);
+
+		for (int block_id_1 = 0; block_id_1 < cd.Ns; block_id_1++)
+		{
+			for (int block_id_2 = 0; block_id_2 < cd.Ns; block_id_2++)
+			{
+				for (int state_id_1 = 0; state_id_1 < cd.Ns; state_id_1++)
+				{
+					for (int state_id_2 = 0; state_id_2 < cd.Ns; state_id_2++)
+					{
+						row = block_id_1 * cd.Ns + state_id_1;
+						col = block_id_2 * cd.Ns + state_id_2;
+
+						term.real = cp.g * 0.5 * (2.0 * mtx_aux_mult[row * dim + col].real
+							- diss_mult[block_id_2 * cd.Ns + block_id_1].real * eye[state_id_1 * cd.Ns + state_id_2]
+							- eye[block_id_1 * cd.Ns + block_id_2] * diss_mult[state_id_1 * cd.Ns + state_id_2].real);
+
+						term.imag = cp.g * 0.5 * (2.0 * mtx_aux_mult[row * dim + col].imag
+							- diss_mult[block_id_2 * cd.Ns + block_id_1].imag * eye[state_id_1 * cd.Ns + state_id_2]
+							- eye[block_id_1 * cd.Ns + block_id_2] * diss_mult[state_id_1 * cd.Ns + state_id_2].imag);
+
+
+						cd.lindbladian[row * dim + col].real += term.real;
+						cd.lindbladian[row * dim + col].imag += term.imag;
+					}
+				}
+			}
+		}
+	}
+
+	delete[] eye;
+	delete[] diss;
+	delete[] diss_conj;
+	delete[] diss_mult;
+
+	delete[] mtx_aux_1;
+	delete[] mtx_aux_2;
+	delete[] mtx_aux_mult;
+
+	if (cp.dump_super_operator > 0)
+	{
+		string libladian_fn = cp.path + "lindbladian" + file_name_suffix(cp, 4);
+		cout << "save libladian to file:" << endl << libladian_fn << endl << endl;
+		write_complex_data(libladian_fn, cd.lindbladian, cd.Ns*cd.Ns*cd.Ns*cd.Ns, 16);
+	}
+
+	time = omp_get_wtime() - time;
+	cout << "time of creating libladian matrix: " << time << endl << endl;
+}
+
+void free_libladian(ConfigData & cd, ConfigParam & cp)
+{
+	delete[] cd.lindbladian;
 }

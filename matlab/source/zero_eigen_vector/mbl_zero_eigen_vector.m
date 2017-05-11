@@ -15,6 +15,16 @@ g                   = input_data(9);
 seed_start          = input_data(10);
 seed_num            = input_data(11);
 save_type           = input_data(12);
+save_super_operator = input_data(13);
+dump_type           = input_data(14);
+
+if dump_type == 0
+    data_path = '../../../data/zero_eigen_vector/matlab/';
+elseif dump_type == 1
+    data_path = '';
+else
+   error('Error: wrong dump_type');
+end
 
 Np = Nc/2;
 Ns = nchoosek(Nc,Np);
@@ -57,7 +67,7 @@ for seed = seed_start : seed_start + (seed_num - 1)
         Hd(state_id_1, state_id_1) = ( dec2bin(idtox(state_id_1), Nc) == '1' ) * E;
     end
     
-    file_name = sprintf('random_energies_%s.txt', file_name_suffix);
+    file_name = sprintf('%srandom_energies_%s.txt', data_path, file_name_suffix);
     file_id = fopen(file_name, 'w');
     for dump_id = 1:Nc
         fprintf(file_id, '%0.18e\n', E(dump_id));
@@ -96,6 +106,17 @@ for seed = seed_start : seed_start + (seed_num - 1)
     
     H = -J*Hh + U*Hi + 2.0*W*Hd;
     
+    if(save_type >= 2)
+        file_name = sprintf('%shamiltonian_%s.txt',data_path, file_name_suffix);
+        file_id = fopen(file_name, 'w');
+        for state_id_1 = 1:Ns
+            for state_id_2 = 1:Ns
+                fprintf(file_id, '%0.18e\n', H(state_id_1, state_id_2));
+            end
+        end
+        fclose(file_id);
+    end
+    
     Hd = 0;
     Hi = 0;
     Hh = 0;
@@ -108,7 +129,7 @@ for seed = seed_start : seed_start + (seed_num - 1)
     evals_H = diag(evals_H);
     
     if(save_type >= 1)
-        file_name = sprintf('hamiltonian_evals_%s.txt', file_name_suffix);
+        file_name = sprintf('%shamiltonian_evals_%s.txt', data_path, file_name_suffix);
         file_id = fopen(file_name, 'w');
         for state_id_1 = 1:Ns
             fprintf(file_id, '%0.18e\n', evals_H(state_id_1));
@@ -117,7 +138,7 @@ for seed = seed_start : seed_start + (seed_num - 1)
     end
     
     if(save_type >= 2)
-        file_name = sprintf('hamiltonian_evecs_%s.txt', file_name_suffix);
+        file_name = sprintf('%shamiltonian_evecs_%s.txt', data_path, file_name_suffix);
         file_id = fopen(file_name, 'w');
         for state_id_1 = 1:Ns
             for state_id_2 = 1:Ns
@@ -132,6 +153,17 @@ for seed = seed_start : seed_start + (seed_num - 1)
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
     
     super_rp_matrix = -sqrt(-1) * ( kron(eye(Ns), H) - kron(transpose(H), eye(Ns)) );
+    
+    if(save_super_operator >= 0)
+        file_name = sprintf('%slindbladian_%s.txt', data_path, file_name_suffix);
+        file_id = fopen(file_name, 'w');
+        for state_id_1 = 1 : Ns * Ns
+            for state_id_2 = 1 : Ns * Ns
+                fprintf(file_id, '%0.18e %0.18e\n', real(super_rp_matrix(state_id_1, state_id_2)), imag(super_rp_matrix(state_id_1, state_id_2)));
+            end
+        end
+        fclose(file_id);
+    end
     
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
     %                             Dissipator
@@ -158,10 +190,57 @@ for seed = seed_start : seed_start + (seed_num - 1)
                 end
             end
             
+            if(save_super_operator >= 0)
+                file_name = sprintf('%sdissipator_%d_%s.txt', data_path, dissipator_id, file_name_suffix);
+                file_id = fopen(file_name, 'w');
+                for state_id_1 = 1 : Ns
+                    for state_id_2 = 1 : Ns
+                        fprintf(file_id, '%0.18e %0.18e\n', real(dissipator(state_id_1, state_id_2)), imag(dissipator(state_id_1, state_id_2)));
+                    end
+                end
+                fclose(file_id);
+            end
+            
+             if(save_super_operator >= 0)
+                dissipator_conj = dissipator';
+                file_name = sprintf('%sdissipator_conj_%d_%s.txt', data_path, dissipator_id, file_name_suffix);
+                file_id = fopen(file_name, 'w');
+                for state_id_1 = 1 : Ns
+                    for state_id_2 = 1 : Ns
+                        fprintf(file_id, '%0.18e %0.18e\n', real(dissipator_conj(state_id_1, state_id_2)), imag(dissipator_conj(state_id_1, state_id_2)));
+                    end
+                end
+                fclose(file_id);
+             end
+            
+             if(save_super_operator >= 0)
+                dissipator_mult = dissipator'*dissipator;
+                file_name = sprintf('%sdissipator_mult_%d_%s.txt', data_path, dissipator_id, file_name_suffix);
+                file_id = fopen(file_name, 'w');
+                for state_id_1 = 1 : Ns
+                    for state_id_2 = 1 : Ns
+                        fprintf(file_id, '%0.18e %0.18e\n', real(dissipator_mult(state_id_1, state_id_2)), imag(dissipator_mult(state_id_1, state_id_2)));
+                    end
+                end
+                fclose(file_id);
+            end
+            
             super_rp_matrix = super_rp_matrix + ...
                 g * 0.5 * (2.0 * kron(eye(Ns),dissipator) * kron(transpose(dissipator'),eye(Ns)) - ...
                 kron(transpose(dissipator'*dissipator), eye(Ns)) - ...
                 kron(eye(Ns), dissipator'*dissipator));
+            
+            
+            if(save_super_operator >= 0)
+                file_name = sprintf('%slindbladian_%s.txt', data_path, file_name_suffix);
+                file_id = fopen(file_name, 'w');
+                for state_id_1 = 1 : Ns * Ns
+                    for state_id_2 = 1 : Ns * Ns
+                        fprintf(file_id, '%0.18e %0.18e\n', real(super_rp_matrix(state_id_1, state_id_2)), imag(super_rp_matrix(state_id_1, state_id_2)));
+                    end
+                end
+                fclose(file_id);
+            end
         end
         
         if (border_conditions == 1)
@@ -205,6 +284,17 @@ for seed = seed_start : seed_start + (seed_num - 1)
         end
     end
     
+    if(save_super_operator >= 0)
+        file_name = sprintf('%slindbladian_%s.txt', data_path, file_name_suffix);
+        file_id = fopen(file_name, 'w');
+        for state_id_1 = 1 : Ns * Ns
+            for state_id_2 = 1 : Ns * Ns
+                fprintf(file_id, '%0.18e %0.18e\n', real(super_rp_matrix(state_id_1, state_id_2)), imag(super_rp_matrix(state_id_1, state_id_2)));
+            end
+        end
+        fclose(file_id);
+    end
+    
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
     %                           Zero eigen vector
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -225,7 +315,7 @@ for seed = seed_start : seed_start + (seed_num - 1)
     rho = rho / trace(rho);
     
     if(save_type >= 1)
-        file_name = sprintf('diag_rho_in_direct_basis_%s.txt', file_name_suffix);
+        file_name = sprintf('%sdiag_rho_in_direct_basis_%s.txt', data_path, file_name_suffix);
         file_id = fopen(file_name, 'w');
         for state_id_1 = 1:Ns
             fprintf(file_id, '%0.18e\n', rho(state_id_1, state_id_1));
@@ -234,7 +324,7 @@ for seed = seed_start : seed_start + (seed_num - 1)
     end
     
     if(save_type >= 2)
-        file_name = sprintf('rho_in_direct_basis_%s.txt', file_name_suffix);
+        file_name = sprintf('%srho_in_direct_basis_%s.txt', data_path, file_name_suffix);
         file_id = fopen(file_name, 'w');
         for state_id_1 = 1:Ns
             for state_id_2 = 1:Ns
@@ -251,7 +341,7 @@ for seed = seed_start : seed_start + (seed_num - 1)
     rho_in_stationary_basis = evecs_H' * rho * evecs_H;
     
     if(save_type >= 1)
-        file_name = sprintf('diag_rho_in_stationary_basis_%s.txt', file_name_suffix);
+        file_name = sprintf('%sdiag_rho_in_stationary_basis_%s.txt', data_path, file_name_suffix);
         file_id = fopen(file_name, 'w');
         for state_id_1 = 1:Ns
             fprintf(file_id, '%0.18e\n', rho_in_stationary_basis(state_id_1, state_id_1));
@@ -260,7 +350,7 @@ for seed = seed_start : seed_start + (seed_num - 1)
     end
     
     if(save_type >= 2)
-        file_name = sprintf('rho_in_stationary_basis_%s.txt', file_name_suffix);
+        file_name = sprintf('%srho_in_stationary_basis_%s.txt', data_path, file_name_suffix);
         file_id = fopen(file_name, 'w');
         for state_id_1 = 1:Ns
             for state_id_2 = 1:Ns
@@ -281,7 +371,7 @@ for seed = seed_start : seed_start + (seed_num - 1)
     end
     imbalance = sum(n_part(1:2:Nc-1) - n_part(2:2:Nc)) / sum(n_part);
     
-    file_name = sprintf('characteristics_%s.txt', file_name_suffix);
+    file_name = sprintf('%scharacteristics_%s.txt', data_path, file_name_suffix);
     file_id = fopen(file_name, 'w');
     fprintf(file_id, '%0.18e %0.18e', entropy, imbalance);
     fclose(file_id);
@@ -364,7 +454,7 @@ for seed = seed_start : seed_start + (seed_num - 1)
     
     error = max(max(abs(discrepancy)));
     
-    file_name = sprintf('checking_%s.txt', file_name_suffix);
+    file_name = sprintf('%schecking_%s.txt', data_path, file_name_suffix);
     file_id = fopen(file_name, 'w');
     fprintf(file_id, '%0.18e %0.18e\n', error, abs(zero_eval));
     fclose(file_id);

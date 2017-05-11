@@ -89,6 +89,11 @@ void set_param(ConfigParam &param, string str, string value)
 		param.dump = atoi(value.c_str());
 	}
 
+	if (str.compare("dump_super_operator") == 0)
+	{
+		param.dump_super_operator = atoi(value.c_str());
+	}
+
 	if (str.compare("path") == 0)
 	{
 		param.path = value;
@@ -123,19 +128,20 @@ void init_config_param(ConfigParam &param, char * file_name)
 
 void output_setting(ConfigParam &param)
 {
-	cout << "############# parameters #############"	<< endl;
-	cout << "Nc = " << param.Nc							<< endl;
-	cout << "W = " << param.W							<< endl;
-	cout << "U = " << param.U							<< endl;
-	cout << "J = " << param.J							<< endl;
-	cout << "g = " << param.g							<< endl;
-	cout << "dt = " << param.dt							<< endl;
-	cout << "alpha = " << param.dt						<< endl;
-	cout << "et = " << param.et							<< endl;
-	cout << "init = " << param.init						<< endl;
-	cout << "seed = " << param.seed						<< endl;
-	cout << "max_num_seeds = " << param.max_num_seeds	<< endl;
-	cout << "dump = " << param.dump						<< endl;
-	cout << "path = " << param.path						<< endl;
-	cout << "######################################"	<< endl;
+	cout << "############# parameters #############"					<< endl;
+	cout << "Nc = " << param.Nc											<< endl;
+	cout << "W = " << param.W											<< endl;
+	cout << "U = " << param.U											<< endl;
+	cout << "J = " << param.J											<< endl;
+	cout << "g = " << param.g											<< endl;
+	cout << "dt = " << param.dt											<< endl;
+	cout << "alpha = " << param.dt										<< endl;
+	cout << "et = " << param.et											<< endl;
+	cout << "init = " << param.init										<< endl;
+	cout << "seed = " << param.seed										<< endl;
+	cout << "max_num_seeds = " << param.max_num_seeds					<< endl;
+	cout << "dump = " << param.dump										<< endl;
+	cout << "dump_super_operator = " << param.dump_super_operator		<< endl;
+	cout << "path = " << param.path										<< endl;
+	cout << "######################################"					<< endl;
 }

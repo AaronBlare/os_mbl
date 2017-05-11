@@ -16,48 +16,51 @@ using namespace std;
 
 struct ConfigParam
 {
-	int		Nc;				// num of cells
-	double	W;				// disorder
-	double	U;				// interaction
-	double	J;				// hopping
-	double	g;				// dissipation
-	int		dt;				// dissipator type
-	double	alpha;			// Diehl dissipator phase
-	int		et;				// energy type
-	string	init;			// random init file
-	int		seed;			// random seed
-	int		max_num_seeds;	// max num of seeds
-	int		dump;			// dump type
+	int		Nc;						// num of cells
+	double	W;						// disorder
+	double	U;						// interaction
+	double	J;						// hopping
+	double	g;						// dissipation
+	int		dt;						// dissipator type
+	double	alpha;					// Diehl dissipator phase
+	int		et;						// energy type
+	string	init;					// random init file
+	int		seed;					// random seed
+	int		max_num_seeds;			// max num of seeds
+	int		dump;					// dump type
+	int		dump_super_operator;
 	string  path;
 
 	ConfigParam(
-		int		_Nc			= 10,
-		double	_W			= 8.0,
-		double	_U			= 1.0,
-		double	_J			= 1.0,
-		double	_g			= 0.1,
-		int		_dt			= 1,
-		double _alpha		= 0.0,
-		int		_et			= 0,
-		string _init		= "",
-		int		_seed		= 1,
-		int _max_num_seeds	= 10000,
-		int		_dump		= 0,
-		string _path		= ""
+		int		_Nc						= 10,
+		double	_W						= 8.0,
+		double	_U						= 1.0,
+		double	_J						= 1.0,
+		double	_g						= 0.1,
+		int		_dt						= 1,
+		double _alpha					= 0.0,
+		int		_et						= 0,
+		string _init					= "",
+		int		_seed					= 1,
+		int _max_num_seeds				= 10000,
+		int		_dump					= 0,
+		int _dump_super_operator		= 0,
+		string _path					= ""
 		)
 	{
-		Nc			= _Nc;
-		W			= _W;
-		U			= _U;
-		J			= _J;
-		g			= _g;
-		dt			= _dt;
-		alpha		= _alpha;
-		et			= _et;
-		init		= _init;
-		seed		= _seed;
-		max_num_seeds	= _max_num_seeds;
-		dump		= _dump;
+		Nc							= _Nc;
+		W							= _W;
+		U							= _U;
+		J							= _J;
+		g							= _g;
+		dt							= _dt;
+		alpha						= _alpha;
+		et							= _et;
+		init						= _init;
+		seed						= _seed;
+		max_num_seeds				= _max_num_seeds;
+		dump						= _dump;
+		dump_super_operator			= _dump_super_operator;
 		path = _path;
 	}
 };

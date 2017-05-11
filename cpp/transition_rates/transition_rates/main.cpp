@@ -17,7 +17,8 @@ int main(int argc, char ** argv)
 
 	double time = omp_get_wtime();
 
-	run_experiment(cd, param);
+	//run_trans_rates(cd, param);
+	run_zero_eigen_vector(cd, param);
 
 	time = omp_get_wtime() - time;
 	cout << "total time: " << time << endl << endl;

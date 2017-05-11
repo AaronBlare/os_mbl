@@ -19,6 +19,8 @@ struct ConfigData
 
 	double * trans_rates;	// transition rates matrix
 
+	MKL_Complex16 * lindbladian;		// libladian
+
 	double * diag_rho_in_st;			// diag of matrix rho in stationary basis
 	double * rho_in_d;			// rho in direct basis
 	double * diag_rho_in_d;				// diag of matrix rho in direct basis
@@ -26,7 +28,8 @@ struct ConfigData
 	double imbalance;					// entropy of asymptotic state
 };
 
-void run_experiment(ConfigData &cd, ConfigParam &cp);
+void run_trans_rates(ConfigData &cd, ConfigParam &cp);
+void run_zero_eigen_vector(ConfigData &cd, ConfigParam &cp);
 
 int init_aux_data(ConfigData &cd);
 void free_aux_data(ConfigData &cd);
@@ -47,3 +50,6 @@ void init_diag_rho_data(ConfigData &cd, ConfigParam &cp);
 void free_diag_rho_data(ConfigData &cd);
 
 void calculate_characteristics(ConfigData &cd, ConfigParam &cp);
+
+void init_libladian(ConfigData &cd, ConfigParam &cp);
+void free_libladian(ConfigData &cd, ConfigParam &cp);

@@ -51,3 +51,11 @@ cpp/QJ/QJ/Debug/
 data/transition_rates/cpp/
 
 data/transition_rates/matlab/
+
+data/zero_eigen_vector/cpp/
+
+data/zero_eigen_vector/matlab/
+
+*.asv
+
+cpp/transition_rates/\.vs/transition_rates/v14/\.suo
