@@ -1,5 +1,7 @@
 clear all;
 
+tic
+
 filename = 'config.txt';
 input_data = importdata(filename);
 
@@ -19,12 +21,21 @@ begin_dump          = input_data(13);
 end_dump            = input_data(14);
 num_dumps           = input_data(15);
 save_type           = input_data(16);
+dump_fs           = input_data(17);
+
+if dump_fs == 0
+    data_path = '../../../data/int/matlab/';
+elseif dump_fs == 1
+    data_path = '';
+else
+   error('Error: wrong dump_type');
+end
 
 Np = Nc/2;
 Ns = nchoosek(Nc, Np);
 num = precalc_states (Nc, Np);
 
-file_name_suffix = sprintf('_Nc(%d)_dt(%d)_alpha(%0.4f)_et(%d)_W(%0.4f)_U(%0.4f)_J(%0.4f)_gamma(%0.4f)_ist(%d)_iss(%d)_dump_type(%d)_seed(%d).txt', ...
+file_name_suffix = sprintf('Nc(%d)_dt(%d)_alpha(%0.4f)_et(%d)_W(%0.4f)_U(%0.4f)_J(%0.4f)_gamma(%0.4f)_ist(%d)_iss(%d)_dump_type(%d)_seed(%d).txt', ...
     Nc, ...
     dissipator_type, ...
     alpha, ...
@@ -77,7 +88,7 @@ for k = 1:Ns
     Hd(k,k) = ( dec2bin(idtox(k), Nc) == '1' ) * E;
 end
 
-file_name = sprintf('random_energies_%s', file_name_suffix);
+file_name = sprintf('%srandom_energies_%s', data_path, file_name_suffix);
 file_id = fopen(file_name, 'w');
 for dump_id = 1:Nc
     fprintf(file_id, '%0.18e\n', E(dump_id));
@@ -107,10 +118,21 @@ end
 %%%%%%%%%%%%
 H= -J*Hh + U*Hi + 2.0*W*Hd;
 
+if(save_type >= 1)
+    file_name = sprintf('%shamiltonian_%s', data_path, file_name_suffix);
+    file_id = fopen(file_name, 'w');
+    for state_id_1 = 1:Ns
+        for state_id_2 = 1:Ns
+            fprintf(file_id, '%0.18e\n', H(state_id_1, state_id_2));
+        end
+    end
+    fclose(file_id);
+end
+
 [Ev,Eg] = eig(H); % Anderson modes
 
 if(save_type >= 1)
-    file_name = sprintf('eg_hamiltonian_%s', file_name_suffix);
+    file_name = sprintf('%seg_hamiltonian_%s', data_path, file_name_suffix);
     file_id = fopen(file_name, 'w');
     for state_id = 1:Ns
         fprintf(file_id, '%0.18e\n', Eg(state_id, state_id));
@@ -119,7 +141,7 @@ if(save_type >= 1)
 end
 
 if(save_type >= 2)
-    file_name = sprintf('ev_hamiltonian_%s', file_name_suffix);
+    file_name = sprintf('%sev_hamiltonian_%s', data_path, file_name_suffix);
     file_id = fopen(file_name, 'w');
     for state_id_1 = 1:Ns
         for state_id_2 = 1:Ns
@@ -184,6 +206,8 @@ else
 end
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
+toc
+
 Ps = sparse(P);
 P=0;
 
@@ -204,7 +228,7 @@ toc
 
 total_num_dumps = size(times, 1);
 
-file_name = sprintf('times_%s', file_name_suffix);
+file_name = sprintf('%stimes_%s', data_path, file_name_suffix);
 file_id = fopen(file_name, 'w');
 for dump_id = 1:total_num_dumps
     fprintf(file_id, '%0.18e\n', times(dump_id));
@@ -268,44 +292,44 @@ for dump_id = 1:total_num_dumps
     local_iprs_and(dump_id) = stationary_ipr_and;
 end
 
-total_num_dumps = 1;
+total_num_dumps = size(local_imbalances, 1);
 
-file_name = sprintf('entropy_%s', file_name_suffix);
+file_name = sprintf('%sentropy_%s', data_path, file_name_suffix);
 file_id = fopen(file_name, 'w');
 for dump_id = 1:total_num_dumps
     fprintf(file_id, '%0.18e\n', local_entropies(dump_id));
 end
 fclose(file_id);
 
-file_name = sprintf('entropy_and_%s', file_name_suffix);
+file_name = sprintf('%sentropy_and_%s', data_path, file_name_suffix);
 file_id = fopen(file_name, 'w');
 for dump_id = 1:total_num_dumps
     fprintf(file_id, '%0.18e\n', local_entropies_and(dump_id));
 end
 fclose(file_id);
 
-file_name = sprintf('imbalance_%s', file_name_suffix);
+file_name = sprintf('%simbalance_%s', data_path, file_name_suffix);
 file_id = fopen(file_name, 'w');
 for dump_id = 1:total_num_dumps
     fprintf(file_id, '%0.18e\n', local_imbalances(dump_id));
 end
 fclose(file_id);
 
-file_name = sprintf('imbalance_and_%s', file_name_suffix);
+file_name = sprintf('%simbalance_and_%s', data_path, file_name_suffix);
 file_id = fopen(file_name, 'w');
 for dump_id = 1:total_num_dumps
     fprintf(file_id, '%0.18e\n', local_imbalances_and(dump_id));
 end
 fclose(file_id);
 
-file_name = sprintf('ipr_%s', file_name_suffix);
+file_name = sprintf('%sipr_%s', data_path, file_name_suffix);
 file_id = fopen(file_name, 'w');
 for dump_id = 1:total_num_dumps
     fprintf(file_id, '%0.18e\n', real(local_iprs(dump_id)));
 end
 fclose(file_id);
 
-file_name = sprintf('ipr_and_%s', file_name_suffix);
+file_name = sprintf('%sipr_and_%s', data_path, file_name_suffix);
 file_id = fopen(file_name, 'w');
 for dump_id = 1:total_num_dumps
     fprintf(file_id, '%0.18e\n', real(local_iprs_and(dump_id)));
@@ -313,7 +337,7 @@ end
 fclose(file_id);
 
 if(save_type >= 1)
-    file_name = sprintf('final_rho_diag_in_direct_basis_%s', file_name_suffix);
+    file_name = sprintf('%sfinal_rho_diag_in_direct_basis_%s', data_path, file_name_suffix);
     file_id = fopen(file_name, 'w');
     for state_id = 1:Ns
         fprintf(file_id, '%0.18e\n', final_rho(state_id, state_id));
@@ -322,7 +346,7 @@ if(save_type >= 1)
 end
 
 if(save_type >= 2)
-	file_name = sprintf('final_rho_in_direct_basis_%s', file_name_suffix);
+	file_name = sprintf('%sfinal_rho_in_direct_basis_%s', data_path, file_name_suffix);
     file_id = fopen(file_name, 'w');
 	for state_id_1 = 1:Ns
 		for state_id_2 = 1:Ns
@@ -333,7 +357,7 @@ if(save_type >= 2)
 end
 
 if(save_type >= 1)
-    file_name = sprintf('final_rho_diag_in_stationary_basis_%s', file_name_suffix);
+    file_name = sprintf('%sfinal_rho_diag_in_stationary_basis_%s', data_path, file_name_suffix);
     file_id = fopen(file_name, 'w');
     for state_id = 1:Ns
         fprintf(file_id, '%0.18e\n', final_rho_and(state_id, state_id));
@@ -342,7 +366,7 @@ if(save_type >= 1)
 end
 
 if(save_type >= 2)
-	file_name = sprintf('final_rho_in_stationary_basis_%s', file_name_suffix);
+	file_name = sprintf('%sfinal_rho_in_stationary_basis_%s', data_path, file_name_suffix);
     file_id = fopen(file_name, 'w');
 	for state_id_1 = 1:Ns
 		for state_id_2 = 1:Ns
@@ -445,12 +469,12 @@ end
 
 err = max(max(abs(dy)));
 
-file_name = sprintf('stationary_info_%s', file_name_suffix);
+file_name = sprintf('%sstationary_info_%s', data_path, file_name_suffix);
 file_id = fopen(file_name, 'w');
 fprintf(file_id, '%0.18e %0.18e %0.18e %0.18e %0.18e %0.18e %0.18e %0.18e %0.18e %0.18e\n', err, abs(zero_eval), max(diag_diff), max(diag_diff_rel), stationary_entropy, stationary_entropy_and, stationary_imbalance, stationary_imbalance_and, stationary_ipr, stationary_ipr_and);
 fclose(file_id);
 
-file_name = sprintf('stationary_rho_%s', file_name_suffix);
+file_name = sprintf('%sstationary_rho_%s', data_path, file_name_suffix);
 file_id = fopen(file_name, 'w');
 st_rho_abs_diag = abs(diag(st_rho));
 for i = 1:Ns

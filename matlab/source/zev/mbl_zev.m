@@ -19,7 +19,7 @@ save_super_operator = input_data(13);
 dump_type           = input_data(14);
 
 if dump_type == 0
-    data_path = '../../../data/zero_eigen_vector/matlab/';
+    data_path = '../../../data/zev/matlab/';
 elseif dump_type == 1
     data_path = '';
 else

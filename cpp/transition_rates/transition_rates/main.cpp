@@ -17,8 +17,24 @@ int main(int argc, char ** argv)
 
 	double time = omp_get_wtime();
 
-	//run_trans_rates(cd, param);
-	run_zero_eigen_vector(cd, param);
+	if (param.task == 0)
+	{
+		run_zero_eigen_vector(cd, param);
+	}
+	else if (param.task == 1)
+	{
+		run_integration(cd, param);
+	}
+	else if (param.task == 2)
+	{
+		run_trans_rates(cd, param);
+	}
+	else
+	{
+		stringstream msg;
+		msg << "wrong task value: " << param.task << endl;
+		Error(msg.str());
+	}
 
 	time = omp_get_wtime() - time;
 	cout << "total time: " << time << endl << endl;

@@ -59,3 +59,15 @@ data/zero_eigen_vector/matlab/
 *.asv
 
 cpp/transition_rates/\.vs/transition_rates/v14/\.suo
+
+data/tr/cpp/
+
+data/tr/matlab/
+
+data/zev/cpp/
+
+data/zev/matlab/
+
+data/int/cpp/
+
+data/int/matlab/

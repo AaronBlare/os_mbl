@@ -63,61 +63,194 @@ void print_int_array(int * data, int N)
 
 string file_name_suffix(ConfigParam &cp, int precision)
 {
+	if (cp.task == 0)
+	{
+		return file_name_suffix_zev(cp, precision);
+	}
+	else if (cp.task == 1)
+	{
+		return file_name_suffix_int(cp, precision);
+	}
+	else if (cp.task == 2)
+	{
+		return file_name_suffix_tr(cp, precision);
+	}
+	else if (cp.task == 3)
+	{
+		return file_name_suffix_qj(cp, precision);
+	}
+	else
+	{
+		stringstream msg;
+		msg << "wrong task value: " << cp.task << endl;
+		Error(msg.str());
+	}
+}
+
+string file_name_suffix_zev(ConfigParam &cp, int precision)
+{
 	stringstream fns;
-	fns << "_Nc("					<< cp.Nc												<< ")";
-	fns << "_dt("					<< cp.dt												<< ")";
-	fns << "_alpha("				<< setprecision(precision) << fixed << cp.alpha			<< ")";
-	fns << "_et("					<< cp.et												<< ")";
-	fns << "_W("					<< setprecision(precision) << fixed << cp.W				<< ")";
-	fns << "_U("					<< setprecision(precision) << fixed << cp.U				<< ")";
-	fns << "_J("					<< setprecision(precision) << fixed << cp.J				<< ")";
-	fns << "_g("					<< setprecision(precision) << fixed << cp.g				<< ")";
-	fns << "_max_num_seeds("		<< cp.max_num_seeds										<< ")";
-	fns << "_seed("					<< cp.seed												<< ")";
+	fns << "_Nc(" << cp.Nc << ")";
+	fns << "_dt(" << cp.dt << ")";
+	fns << "_alpha(" << setprecision(precision) << fixed << cp.alpha << ")";
+	fns << "_et(" << cp.et << ")";
+	fns << "_W(" << setprecision(precision) << fixed << cp.W << ")";
+	fns << "_U(" << setprecision(precision) << fixed << cp.U << ")";
+	fns << "_J(" << setprecision(precision) << fixed << cp.J << ")";
+	fns << "_g(" << setprecision(precision) << fixed << cp.g << ")";
+	fns << "_max_num_seeds(" << cp.max_num_seeds << ")";
+	fns << "_seed(" << cp.seed << ")";
 	fns << ".txt";
 
 	return fns.str();
 }
 
-void write_double_data(string file_name, double * data, int size, int precision)
+string file_name_suffix_int(ConfigParam &cp, int precision)
 {
-	ofstream ofs(file_name);
-	if (ofs.is_open())
-	{
-		ofs << setprecision(precision) << scientific;
-		for (int i = 0; i < size; i ++)
-		{
-			ofs << data[i] << endl;
-		}
+	stringstream fns;
+	fns << "_Nc(" << cp.Nc << ")";
+	fns << "_dt(" << cp.dt << ")";
+	fns << "_alpha(" << setprecision(precision) << fixed << cp.alpha << ")";
+	fns << "_et(" << cp.et << ")";
+	fns << "_W(" << setprecision(precision) << fixed << cp.W << ")";
+	fns << "_U(" << setprecision(precision) << fixed << cp.U << ")";
+	fns << "_J(" << setprecision(precision) << fixed << cp.J << ")";
+	fns << "_g(" << setprecision(precision) << fixed << cp.g << ")";
+	fns << "_max_num_seeds(" << cp.max_num_seeds << ")";
+	fns << "_seed(" << cp.seed << ")";
+	fns << "_ist(" << cp.init_state_type << ")";
+	fns << "_isid(" << cp.init_state_id << ")";
+	fns << "_idt(" << cp.int_dump_type << ")";
+	fns << ".txt";
 
-		ofs.close();
-	}
-	else
+	return fns.str();
+}
+
+string file_name_suffix_tr(ConfigParam &cp, int precision)
+{
+	stringstream fns;
+	fns << "_Nc(" << cp.Nc << ")";
+	fns << "_dt(" << cp.dt << ")";
+	fns << "_alpha(" << setprecision(precision) << fixed << cp.alpha << ")";
+	fns << "_et(" << cp.et << ")";
+	fns << "_W(" << setprecision(precision) << fixed << cp.W << ")";
+	fns << "_U(" << setprecision(precision) << fixed << cp.U << ")";
+	fns << "_J(" << setprecision(precision) << fixed << cp.J << ")";
+	fns << "_g(" << setprecision(precision) << fixed << cp.g << ")";
+	fns << "_max_num_seeds(" << cp.max_num_seeds << ")";
+	fns << "_seed(" << cp.seed << ")";
+	fns << ".txt";
+
+	return fns.str();
+}
+
+string file_name_suffix_qj(ConfigParam &cp, int precision)
+{
+	stringstream fns;
+	fns << "_Nc(" << cp.Nc << ")";
+	fns << "_dt(" << cp.dt << ")";
+	fns << "_alpha(" << setprecision(precision) << fixed << cp.alpha << ")";
+	fns << "_et(" << cp.et << ")";
+	fns << "_W(" << setprecision(precision) << fixed << cp.W << ")";
+	fns << "_U(" << setprecision(precision) << fixed << cp.U << ")";
+	fns << "_J(" << setprecision(precision) << fixed << cp.J << ")";
+	fns << "_g(" << setprecision(precision) << fixed << cp.g << ")";
+	fns << "_max_num_seeds(" << cp.max_num_seeds << ")";
+	fns << "_seed(" << cp.seed << ")";
+	fns << ".txt";
+
+	return fns.str();
+}
+
+
+void write_double_data(string file_name, double * data, int size, int precision, bool append)
+{
+	if (append)
 	{
-		stringstream msg;
-		msg << "unable to open file:" << endl << file_name << endl;
-		Error(msg.str());
+		ofstream ofs(file_name, ios::app);
+
+		if (ofs.is_open())
+		{
+			ofs << setprecision(precision) << scientific;
+			for (int i = 0; i < size; i++)
+			{
+				ofs << data[i] << endl;
+			}
+
+			ofs.close();
+		}
+		else
+		{
+			stringstream msg;
+			msg << "unable to open file:" << endl << file_name << endl;
+			Error(msg.str());
+		}
+	}
+	else 
+	{
+		ofstream ofs(file_name);
+
+		if (ofs.is_open())
+		{
+			ofs << setprecision(precision) << scientific;
+			for (int i = 0; i < size; i++)
+			{
+				ofs << data[i] << endl;
+			}
+
+			ofs.close();
+		}
+		else
+		{
+			stringstream msg;
+			msg << "unable to open file:" << endl << file_name << endl;
+			Error(msg.str());
+		}
 	}
 }
 
-void write_complex_data(string file_name, MKL_Complex16 * data, int size, int precision)
+void write_complex_data(string file_name, MKL_Complex16 * data, int size, int precision, bool append)
 {
-	ofstream ofs(file_name);
-	if (ofs.is_open())
+	if (append)
 	{
-		ofs << setprecision(precision) << scientific;
-		for (int i = 0; i < size; i ++)
-		{
-			ofs << data[i].real << " " << data[i].imag << endl;
-		}
+		ofstream ofs(file_name, ios::app);
 
-		ofs.close();
+		if (ofs.is_open())
+		{
+			ofs << setprecision(precision) << scientific;
+			for (int i = 0; i < size; i++)
+			{
+				ofs << data[i].real << " " << data[i].imag << endl;
+			}
+
+			ofs.close();
+		}
+		else
+		{
+			stringstream msg;
+			msg << "unable to open file:" << endl << file_name << endl;
+			Error(msg.str());
+		}
 	}
 	else
 	{
-		stringstream msg;
-		msg << "unable to open file:" << endl << file_name << endl;
-		Error(msg.str());
+		ofstream ofs(file_name);
+		if (ofs.is_open())
+		{
+			ofs << setprecision(precision) << scientific;
+			for (int i = 0; i < size; i++)
+			{
+				ofs << data[i].real << " " << data[i].imag << endl;
+			}
+
+			ofs.close();
+		}
+		else
+		{
+			stringstream msg;
+			msg << "unable to open file:" << endl << file_name << endl;
+			Error(msg.str());
+		}
 	}
 }
 

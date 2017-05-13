@@ -1,4 +1,5 @@
-Nc 4
+task 1
+Nc 8
 W 8.0
 U 1.0
 J 1.0
@@ -6,9 +7,16 @@ g 0.1
 dt 1
 alpha 1.0
 et 0
-init ../../../data/zero_eigen_vector/matlab/random_energies_Nc(4)_dt(1)_alpha(1.0000)_et(0)_bc(0)_W(8.0000)_U(1.0000)_J(1.0000)_gamma(0.1000)_ss(1337)_sn(1)_seed(1337).txt
 seed 1
 max_num_seeds 1000
-dump 2
-dump_super_operator 1
-path ../../../data/zero_eigen_vector/cpp/
+dump_vecs 1
+dump_mtxs 1
+dump_sops 0
+init ../../../data/int/matlab/random_energies_Nc(8)_dt(1)_alpha(1.0000)_et(0)_W(8.0000)_U(1.0000)_J(1.0000)_gamma(0.1000)_ist(0)_iss(50)_dump_type(1)_seed(1337).txt
+path ../../../data/int/cpp/
+init_state_type 0
+init_state_id 49
+int_dump_type 1
+num_dumps 50
+begin_dump_time 0.1
+end_dump_time 10000.0

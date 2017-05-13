@@ -29,6 +29,11 @@ vector<string> split(const string& str, const string& delim)
 
 void set_param(ConfigParam &param, string str, string value)
 {
+	if (str.compare("task") == 0)
+	{
+		param.task = atoi(value.c_str());
+	}
+
 	if (str.compare("Nc") == 0)
 	{
 		param.Nc = atoi(value.c_str());
@@ -69,11 +74,6 @@ void set_param(ConfigParam &param, string str, string value)
 		param.et = atoi(value.c_str());
 	}
 
-	if (str.compare("init") == 0)
-	{
-		param.init = value;
-	}
-
 	if (str.compare("seed") == 0)
 	{
 		param.seed = atoi(value.c_str());
@@ -84,19 +84,59 @@ void set_param(ConfigParam &param, string str, string value)
 		param.max_num_seeds = atoi(value.c_str());
 	}
 
-	if (str.compare("dump") == 0)
+	if (str.compare("dump_vecs") == 0)
 	{
-		param.dump = atoi(value.c_str());
+		param.dump_vecs = atoi(value.c_str());
 	}
 
-	if (str.compare("dump_super_operator") == 0)
+	if (str.compare("dump_mtxs") == 0)
 	{
-		param.dump_super_operator = atoi(value.c_str());
+		param.dump_mtxs = atoi(value.c_str());
+	}
+
+	if (str.compare("dump_sops") == 0)
+	{
+		param.dump_sops = atoi(value.c_str());
+	}
+
+	if (str.compare("init") == 0)
+	{
+		param.init = value;
 	}
 
 	if (str.compare("path") == 0)
 	{
 		param.path = value;
+	}
+
+	if (str.compare("init_state_type") == 0)
+	{
+		param.init_state_type = atoi(value.c_str());
+	}
+
+	if (str.compare("init_state_id") == 0)
+	{
+		param.init_state_id = atoi(value.c_str());
+	}
+
+	if (str.compare("int_dump_type") == 0)
+	{
+		param.int_dump_type = atoi(value.c_str());
+	}
+
+	if (str.compare("num_dumps") == 0)
+	{
+		param.num_dumps = atoi(value.c_str());
+	}
+
+	if (str.compare("begin_dump_time") == 0)
+	{
+		param.begin_dump_time = atof(value.c_str());
+	}
+
+	if (str.compare("end_dump_time") == 0)
+	{
+		param.end_dump_time = atof(value.c_str());
 	}
 }
 
@@ -129,6 +169,7 @@ void init_config_param(ConfigParam &param, char * file_name)
 void output_setting(ConfigParam &param)
 {
 	cout << "############# parameters #############"					<< endl;
+	cout << "task = " << param.task										<< endl;
 	cout << "Nc = " << param.Nc											<< endl;
 	cout << "W = " << param.W											<< endl;
 	cout << "U = " << param.U											<< endl;
@@ -137,11 +178,18 @@ void output_setting(ConfigParam &param)
 	cout << "dt = " << param.dt											<< endl;
 	cout << "alpha = " << param.dt										<< endl;
 	cout << "et = " << param.et											<< endl;
-	cout << "init = " << param.init										<< endl;
 	cout << "seed = " << param.seed										<< endl;
 	cout << "max_num_seeds = " << param.max_num_seeds					<< endl;
-	cout << "dump = " << param.dump										<< endl;
-	cout << "dump_super_operator = " << param.dump_super_operator		<< endl;
+	cout << "dump_vecs = " << param.dump_vecs							<< endl;
+	cout << "dump_mtxs = " << param.dump_mtxs							<< endl;
+	cout << "dump_sops = " << param.dump_sops							<< endl;
+	cout << "init = " << param.init										<< endl;
 	cout << "path = " << param.path										<< endl;
+	cout << "init_state_type = " << param.init_state_type				<< endl;
+	cout << "init_state_id = " << param.init_state_id					<< endl;
+	cout << "int_dump_type = " << param.int_dump_type					<< endl;
+	cout << "num_dumps = " << param.num_dumps							<< endl;
+	cout << "begin_dump_time = " << param.begin_dump_time				<< endl;
+	cout << "end_dump_time = " << param.end_dump_time					<< endl;
 	cout << "######################################"					<< endl;
 }

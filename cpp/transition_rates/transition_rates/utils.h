@@ -19,9 +19,17 @@ void print_int_array(int * data, int N);
 
 string file_name_suffix(ConfigParam &cp, int precision);
 
-void write_double_data(string file_name, double * data, int size, int precision);
+string file_name_suffix_zev(ConfigParam &cp, int precision);
 
-void write_complex_data(string file_name, MKL_Complex16 * data, int size, int precision);
+string file_name_suffix_int(ConfigParam &cp, int precision);
+
+string file_name_suffix_tr(ConfigParam &cp, int precision);
+
+string file_name_suffix_qj(ConfigParam &cp, int precision);
+
+void write_double_data(string file_name, double * data, int size, int precision, bool append);
+
+void write_complex_data(string file_name, MKL_Complex16 * data, int size, int precision, bool append);
 
 vector<int> convert_int_to_vector_of_bits(int x, int size);
 
