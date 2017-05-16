@@ -71,3 +71,9 @@ data/zev/matlab/
 data/int/cpp/
 
 data/int/matlab/
+
+*.sdf
+
+*.sln
+
+*.suo
