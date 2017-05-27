@@ -2,6 +2,7 @@ Nc
 dissipator_type
 alpha
 energy_type
+bc
 W
 U
 J

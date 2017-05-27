@@ -9,19 +9,20 @@ Nc                  = input_data(1);
 dissipator_type     = input_data(2);
 alpha               = input_data(3);
 energy_type         = input_data(4);
-W                   = input_data(5);
-U                   = input_data(6);
-J                   = input_data(7);
-g                   = input_data(8);
-seed                = input_data(9);
-init_state_type     = input_data(10);
-init_state_id       = input_data(11);
-dump_type           = input_data(12);
-begin_dump          = input_data(13);
-end_dump            = input_data(14);
-num_dumps           = input_data(15);
-save_type           = input_data(16);
-file_system_type    = input_data(17);
+bc 					= input_data(5)
+W                   = input_data(6);
+U                   = input_data(7);
+J                   = input_data(8);
+g                   = input_data(9);
+seed                = input_data(10);
+init_state_type     = input_data(11);
+init_state_id       = input_data(12);
+dump_type           = input_data(13);
+begin_dump          = input_data(14);
+end_dump            = input_data(15);
+num_dumps           = input_data(16);
+save_type           = input_data(17);
+file_system_type    = input_data(18);
 
 if file_system_type == 1
     data_path = '../../../data/int/matlab/';
@@ -35,11 +36,12 @@ Np = Nc/2;
 Ns = nchoosek(Nc, Np);
 num = precalc_states (Nc, Np);
 
-file_name_suffix = sprintf('Nc(%d)_dt(%d)_alpha(%0.4f)_et(%d)_W(%0.4f)_U(%0.4f)_J(%0.4f)_gamma(%0.4f)_ist(%d)_iss(%d)_dump_type(%d)_seed(%d).txt', ...
+file_name_suffix = sprintf('Nc(%d)_dt(%d)_dp(%0.4f)_et(%d)_bc(%d)_W(%0.4f)_U(%0.4f)_J(%0.4f)_gamma(%0.4f)_ist(%d)_iss(%d)_dump_type(%d)_seed(%d).txt', ...
     Nc, ...
     dissipator_type, ...
     alpha, ...
     energy_type, ...
+	bc, ...
     W, ...
     U, ...
     J, ...
