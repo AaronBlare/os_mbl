@@ -21,11 +21,11 @@ begin_dump          = input_data(13);
 end_dump            = input_data(14);
 num_dumps           = input_data(15);
 save_type           = input_data(16);
-dump_fs           = input_data(17);
+file_system_type    = input_data(17);
 
-if dump_fs == 0
+if file_system_type == 1
     data_path = '../../../data/int/matlab/';
-elseif dump_fs == 1
+elseif file_system_type == 0
     data_path = '';
 else
    error('Error: wrong dump_type');

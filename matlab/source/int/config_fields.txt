@@ -1,0 +1,17 @@
+Nc
+dissipator_type
+alpha
+energy_type
+W
+U
+J
+g
+seed
+init_state_type
+init_state_id
+dump_type
+begin_dump
+end_dump
+num_dumps
+save_type
+file_system_type
