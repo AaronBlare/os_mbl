@@ -1,0 +1,129 @@
+clear all;
+
+home_figures_path = '/home/yusipov/Work/os_mbl/figures/int/matlab';
+
+data_path = '/data/biophys/yusipov/os_mbl/int/matlab/';
+prefix = 'characteristics_pdf';
+data_path = sprintf('%s%s', data_path, prefix);
+
+Nc = 8;
+dissipator_type = 0;
+alpha = 0.0;
+energy_type = 0;
+bc = 0;
+W = 8.0;
+U = 1.0;
+J = 1.0;
+g = 0.1;
+seed = 0;
+init_state_type = 0;
+init_state_id = 50;
+dump_type = 1;
+begin_dump = 0.1;
+end_dump = 10000;
+num_dumps = 250;
+save_type = 0;
+file_system_type = 0;
+
+seed_begin = 1;
+seed_num = 1000;
+
+real_num_dumps = num_dumps + 2;
+
+num_int = 200;
+imb_begin = -1;
+imb_end = 1;
+imb_shift = (imb_end - imb_begin) / num_int;
+imb_int = zeros(num_int, 1);
+for int_id = 1:num_int
+    imb_int(int_id) = imb_begin + int_id * imb_shift - 0.5 * imb_shift;
+end
+eps = 1.0e-6;
+
+imb_pdf = zeros(num_dumps + 1, num_int);
+
+for seed = seed_begin : seed_begin + seed_num - 1
+    
+    seed = seed
+    
+    curr_path = sprintf('%s/Nc_%d/dt_%d/dp_%0.4f/et_%d/bc_%d/W_%0.4f/U_%0.4f/J_%0.4f/g_%0.4f/is_%d_%d/dump_%d/seed_%d', ...
+        data_path, ...
+        Nc, ...
+        dissipator_type, ...
+        alpha, ...
+        energy_type, ...
+        bc, ...
+        W, ...
+        U, ...
+        J, ...
+        g, ...
+        init_state_type, ...
+        init_state_id, ...
+        dump_type, ...
+        seed);
+    
+    suffix = sprintf('Nc(%d)_dt(%d)_dp(%0.4f)_et(%d)_bc(%d)_W(%0.4f)_U(%0.4f)_J(%0.4f)_gamma(%0.4f)_ist(%d)_iss(%d)_dump_type(%d)_seed(%d).txt', ...
+        Nc, ...
+        dissipator_type, ...
+        alpha, ...
+        energy_type, ...
+        bc, ...
+        W, ...
+        U, ...
+        J, ...
+        g, ...
+        init_state_type, ...
+        init_state_id, ...
+        dump_type, ...
+        seed);
+    
+    file_name = sprintf('%s/times_%s', curr_path, suffix);
+    times_curr = importdata(file_name);
+    
+    file_name = sprintf('%s/imbalance_%s', curr_path, suffix);
+    imb_curr = importdata(file_name);
+    
+    for dump_id = 1:num_dumps + 1
+        int_id = floor((imb_curr(dump_id+1) - imb_begin) * num_int / (imb_end - imb_begin + eps)) + 1;
+        imb_pdf(dump_id, int_id) = imb_pdf(dump_id, int_id) + 1;
+    end
+end
+
+imb_pdf = imb_pdf / (seed_num * imb_shift);
+
+hLine = imagesc(log10(times_curr(2:end) * g), imb_int, imb_pdf');
+set(gca, 'FontSize', 30);
+xlabel('$\gamma t$', 'Interpreter', 'latex');
+set(gca, 'FontSize', 30);
+ylabel('$I(\gamma t)$', 'Interpreter', 'latex');
+colormap hot;
+h = colorbar;
+set(gca, 'FontSize', 30);
+title(h, 'PDF', 'FontSize', 33);
+set(gca,'YDir','normal');
+
+
+suffix = sprintf('Nc(%d)_dt(%d)_dp(%0.4f)_et(%d)_bc(%d)_W(%0.4f)_U(%0.4f)_J(%0.4f)_gamma(%0.4f)_ist(%d)_iss(%d)_dump_type(%d)_seed(var)', ...
+    Nc, ...
+    dissipator_type, ...
+    alpha, ...
+    energy_type, ...
+    bc, ...
+    W, ...
+    U, ...
+    J, ...
+    g, ...
+    init_state_type, ...
+    init_state_id, ...
+    dump_type);
+
+savefig(sprintf('%s/imbalance_pdf_%s.fig', home_figures_path, suffix));
+
+h=gcf;
+set(h,'PaperOrientation','landscape');
+set(gcf, 'renderer','painters');
+set(h,'PaperUnits','normalized');
+set(h,'PaperPosition', [0 0 1 1]);
+print(gcf, '-dpdf', sprintf('%s/imbalance_pdf_%s.pdf', home_figures_path, suffix));
+
+

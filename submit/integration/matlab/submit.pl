@@ -8,11 +8,11 @@ $prefix = "characteristics_pdf";
 
 
 $Nc = 8;
-$dissipator_type = 0;
+$dissipator_type = 1;
 $alpha = 0.0;
 $energy_type = 0;
 $bc = 0;
-$W = 10.0;
+$W = 8.0;
 $U = 1.0;
 $J = 1.0;
 $g = 0.1;
@@ -27,7 +27,7 @@ $save_type = 0;
 $file_system_type = 0;
 
 $seed_begin = 1;
-$seed_num = 100;
+$seed_num = 5000;
 
 $alpha_str = sprintf("%0.4f", $alpha);
 $W_str = sprintf("%.4f", $W);
