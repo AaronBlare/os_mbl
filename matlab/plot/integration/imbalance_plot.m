@@ -1,71 +1,119 @@
 clear all;
 
-W = 12; % disorder
-U = 1;  % interaction
-J = 1;  % hopping
-g = 0.1;  % gamma;
+home_figures_path = '/home/yusipov/Work/os_mbl/figures/int/matlab';
 
-Nc = 8;                 % number of cells
-Np = Nc/2;              % number of particles
-Ns = nchoosek(Nc, Np);  % number of states
+data_path = '/data/biophys/yusipov/os_mbl/int/matlab/';
+prefix = 'characteristics_pdf';
+data_path = sprintf('%s%s', data_path, prefix);
 
-diss_type = 1; % Dissipator type: 0-Poletti, 1-Diehl
-
-coeff = 1;
-
-seed_start = 1;
-num_seeds = 100;
-
-init_state_type = 1;
+Nc = 8;
+dissipator_type = 0;
+alpha = 0.0;
+energy_type = 0;
+bc = 0;
+W = 10.0;
+U = 1.0;
+J = 1.0;
+g = 0.1;
+seed = 0;
+init_state_type = 0;
 init_state_id = 50;
+dump_type = 1;
+begin_dump = 0.1;
+end_dump = 10000;
+num_dumps = 250;
+save_type = 0;
+file_system_type = 0;
 
-energy_type = 1;
+seed_begin = 1;
+seed_num = 100;
 
-num_decade_dumps = 50;
-begin_decade = -1;
-end_decade = 4;
-num_decades = end_decade - begin_decade;
-num_log_dumps = num_decade_dumps * num_decades + 1;
-num_log_dumps = num_log_dumps
+real_num_dumps = num_dumps + 2;
 
-local_path = sprintf('results/dt_%d/et_%d/Ns_%d/W_%0.4f/U_%0.4f/J_%0.4f/g_%0.4f/init_type_%d/init_id_%d', diss_type, energy_type, Nc, W, U, J, g, init_state_type, init_state_id);
+imb_avg = zeros(real_num_dumps, 1);
 
-file_name = sprintf('%s/seed_%d/times_Nc(%d)_dt(%d)_et(%d)_W(%0.4f)_U(%0.4f)_J(%0.4f)_gamma(%0.4f)_it(%d)_is(%d).txt', local_path, 1, Nc, diss_type, energy_type, W, U, J, g, init_state_type, init_state_id);
-file_name = file_name
-log_times = importdata(file_name);
-log_times = log_times(2:end);
-
-size(log_times, 1)
-
-imbalances = zeros(num_log_dumps, 1);
-
-for seed = seed_start : seed_start + (num_seeds - 1)
-
-	seed = seed
-     
-    file_name = sprintf('%s/seed_%d/imbalance_Nc(%d)_dt(%d)_et(%d)_W(%0.4f)_U(%0.4f)_J(%0.4f)_gamma(%0.4f)_it(%d)_is(%d)_seed%d.txt', local_path, seed, Nc, diss_type, energy_type,  W, U, J, g, init_state_type, init_state_id, seed);
-    local_imbalances = importdata(file_name);
-	local_imbalances = local_imbalances(1+1 : num_log_dumps+1);
+for seed = seed_begin : seed_begin + seed_num - 1
     
-    for dump_id = 1:num_log_dumps
-        imbalances(dump_id) = imbalances(dump_id) + local_imbalances(dump_id) / num_seeds;
-    end
+    seed = seed
+    
+    curr_path = sprintf('%s/Nc_%d/dt_%d/dp_%0.4f/et_%d/bc_%d/W_%0.4f/U_%0.4f/J_%0.4f/g_%0.4f/is_%d_%d/dump_%d/seed_%d', ...
+        data_path, ...
+        Nc, ...
+        dissipator_type, ...
+        alpha, ...
+        energy_type, ...
+        bc, ...
+        W, ...
+        U, ...
+        J, ...
+        g, ...
+        init_state_type, ...
+        init_state_id, ...
+        dump_type, ...
+        seed);
+    
+    suffix = sprintf('Nc(%d)_dt(%d)_dp(%0.4f)_et(%d)_bc(%d)_W(%0.4f)_U(%0.4f)_J(%0.4f)_gamma(%0.4f)_ist(%d)_iss(%d)_dump_type(%d)_seed(%d).txt', ...
+        Nc, ...
+        dissipator_type, ...
+        alpha, ...
+        energy_type, ...
+        bc, ...
+        W, ...
+        U, ...
+        J, ...
+        g, ...
+        init_state_type, ...
+        init_state_id, ...
+        dump_type, ...
+        seed);
+    
+    file_name = sprintf('%s/times_%s', curr_path, suffix);
+    times_curr = importdata(file_name);
+    
+    file_name = sprintf('%s/imbalance_%s', curr_path, suffix);
+    imb_curr = importdata(file_name);
+    
+    imb_avg = imb_avg + imb_curr;
     
 end
 
-%hLine = plot(log_times, -log(imbalances));
-hLine = plot(log_times * g, -log(imbalances), 'LineWidth', 2);
+
+imb_avg = imb_avg / seed_num;
+
+hLine = plot(times_curr * g, -log(imb_avg), 'LineWidth', 2);
 legend(hLine, sprintf('W=%0.4f \\gamma=%0.4f', W, g));
 set(gca, 'FontSize', 30);
 xlabel('$\gamma t$', 'Interpreter', 'latex');
 set(gca, 'FontSize', 30);
 ylabel('$-\log I(\gamma t)$', 'Interpreter', 'latex');
 
-xlim([10^begin_decade 10^end_decade])
+xlim([begin_dump end_dump])
 legend('-DynamicLegend');
 legend('Location','southeast')
 set(gca,'xscale','log');
 set(gca,'yscale','log');
 
-hold all;
+suffix = sprintf('Nc(%d)_dt(%d)_dp(%0.4f)_et(%d)_bc(%d)_W(%0.4f)_U(%0.4f)_J(%0.4f)_gamma(%0.4f)_ist(%d)_iss(%d)_dump_type(%d)_seed(var)', ...
+    Nc, ...
+    dissipator_type, ...
+    alpha, ...
+    energy_type, ...
+    bc, ...
+    W, ...
+    U, ...
+    J, ...
+    g, ...
+    init_state_type, ...
+    init_state_id, ...
+    dump_type);
+
+savefig(sprintf('%s/imbalance_%s.fig', home_figures_path, suffix));
+
+h=gcf;
+set(h,'PaperOrientation','landscape');
+set(gcf, 'renderer','painters');
+set(h,'PaperUnits','normalized');
+set(h,'PaperPosition', [0 0 1 1]);
+print(gcf, '-dpdf', sprintf('%s/imbalance_%s.pdf', home_figures_path, suffix));
+
 

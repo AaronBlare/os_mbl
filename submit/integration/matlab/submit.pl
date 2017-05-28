@@ -8,11 +8,11 @@ $prefix = "characteristics_pdf";
 
 
 $Nc = 8;
-$dissipator_type = 1;
+$dissipator_type = 0;
 $alpha = 0.0;
 $energy_type = 0;
 $bc = 0;
-$W = 8.0;
+$W = 10.0;
 $U = 1.0;
 $J = 1.0;
 $g = 0.1;
@@ -20,9 +20,9 @@ $seed = 0;
 $init_state_type = 0;
 $init_state_id = 50;
 $dump_type = 1;
-$begin_dump = 0.01;
+$begin_dump = 0.1;
 $end_dump = 10000;
-$num_dumps = 300;
+$num_dumps = 250;
 $save_type = 0;
 $file_system_type = 0;
 
@@ -38,30 +38,30 @@ $g_str = sprintf("%.4f", $g);
 sub ForderName{
 	$key_str = $_[0];
 	
-	return "$data_path/$prefix/Nc_${Nc}/dt_${dissipator_type}/dp_${alpha_str}/et${energy_type}/bc_${bc}/W_${W_str}/U_${U_str}/J_${J_str}/g_${g_str}/is_${init_state_type}_${init_state_id}/dump_${dump_type}/seed_${key_str}";
+	return "$data_path/$prefix/Nc_${Nc}/dt_${dissipator_type}/dp_${alpha_str}/et_${energy_type}/bc_${bc}/W_${W_str}/U_${U_str}/J_${J_str}/g_${g_str}/is_${init_state_type}_${init_state_id}/dump_${dump_type}/seed_${key_str}";
 }
 
 mkdir "$data_path/$prefix";
 mkdir "$data_path/$prefix/Nc_${Nc}";
-mkdir "$data_path/$prefix/Nc_${Nc}/dt_${dissipator_type}"
+mkdir "$data_path/$prefix/Nc_${Nc}/dt_${dissipator_type}";
 mkdir "$data_path/$prefix/Nc_${Nc}/dt_${dissipator_type}/dp_${alpha_str}";
-mkdir "$data_path/$prefix/Nc_${Nc}/dt_${dissipator_type}/dp_${alpha_str}/et${energy_type}";
-mkdir "$data_path/$prefix/Nc_${Nc}/dt_${dissipator_type}/dp_${alpha_str}/et${energy_type}/bc_${bc}";
-mkdir "$data_path/$prefix/Nc_${Nc}/dt_${dissipator_type}/dp_${alpha_str}/et${energy_type}/bc_${bc}/W_${W_str}";
-mkdir "$data_path/$prefix/Nc_${Nc}/dt_${dissipator_type}/dp_${alpha_str}/et${energy_type}/bc_${bc}/W_${W_str}/U_${U_str}";
-mkdir "$data_path/$prefix/Nc_${Nc}/dt_${dissipator_type}/dp_${alpha_str}/et${energy_type}/bc_${bc}/W_${W_str}/U_${U_str}/J_${J_str}";
-mkdir "$data_path/$prefix/Nc_${Nc}/dt_${dissipator_type}/dp_${alpha_str}/et${energy_type}/bc_${bc}/W_${W_str}/U_${U_str}/J_${J_str}/g_${g_str}";
-mkdir "$data_path/$prefix/Nc_${Nc}/dt_${dissipator_type}/dp_${alpha_str}/et${energy_type}/bc_${bc}/W_${W_str}/U_${U_str}/J_${J_str}/g_${g_str}/is_${init_state_type}_${init_state_id}";
-mkdir "$data_path/$prefix/Nc_${Nc}/dt_${dissipator_type}/dp_${alpha_str}/et${energy_type}/bc_${bc}/W_${W_str}/U_${U_str}/J_${J_str}/g_${g_str}/is_${init_state_type}_${init_state_id}/dump_${dump_type}";
+mkdir "$data_path/$prefix/Nc_${Nc}/dt_${dissipator_type}/dp_${alpha_str}/et_${energy_type}";
+mkdir "$data_path/$prefix/Nc_${Nc}/dt_${dissipator_type}/dp_${alpha_str}/et_${energy_type}/bc_${bc}";
+mkdir "$data_path/$prefix/Nc_${Nc}/dt_${dissipator_type}/dp_${alpha_str}/et_${energy_type}/bc_${bc}/W_${W_str}";
+mkdir "$data_path/$prefix/Nc_${Nc}/dt_${dissipator_type}/dp_${alpha_str}/et_${energy_type}/bc_${bc}/W_${W_str}/U_${U_str}";
+mkdir "$data_path/$prefix/Nc_${Nc}/dt_${dissipator_type}/dp_${alpha_str}/et_${energy_type}/bc_${bc}/W_${W_str}/U_${U_str}/J_${J_str}";
+mkdir "$data_path/$prefix/Nc_${Nc}/dt_${dissipator_type}/dp_${alpha_str}/et_${energy_type}/bc_${bc}/W_${W_str}/U_${U_str}/J_${J_str}/g_${g_str}";
+mkdir "$data_path/$prefix/Nc_${Nc}/dt_${dissipator_type}/dp_${alpha_str}/et_${energy_type}/bc_${bc}/W_${W_str}/U_${U_str}/J_${J_str}/g_${g_str}/is_${init_state_type}_${init_state_id}";
+mkdir "$data_path/$prefix/Nc_${Nc}/dt_${dissipator_type}/dp_${alpha_str}/et_${energy_type}/bc_${bc}/W_${W_str}/U_${U_str}/J_${J_str}/g_${g_str}/is_${init_state_type}_${init_state_id}/dump_${dump_type}";
 
 
-for($val = $start; $val < $start + $num_seeds; $val+=1)
+for($val = $seed_begin; $val < $seed_begin + $seed_num; $val+=1)
 {
 	$exp{ForderName($i)} = $val;
 	$i++;
 }
 
-for($seed = $start; $seed < $start + $num_seeds; $seed++)
+for($seed = $seed_begin; $seed < $seed_begin + $seed_num; $seed++)
 {	
 	$key = ForderName($seed);    
 	mkdir "$key";
