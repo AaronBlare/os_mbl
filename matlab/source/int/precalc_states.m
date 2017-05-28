@@ -1,9 +1,13 @@
-function num = precalc_states(n, m)
+function num = precalc_states(n, m, bc)
 global states_id
 k = 1;
 for i = 0:(2 ^ n - 1)
     if ((sum(dec2bin(i) == '1') == 2) && (sum(dec2bin(bitand(i, bitshift(i, 1))) == '1') == 1))
         states_id.adjacent(i + 1) = 1;
+    elseif ((sum(dec2bin(i) == '1') == 2) && (sum(dec2bin(bitand(i, 1)) == '1') == 1) && (sum(dec2bin(bitand(i, 2 ^ (n-1))) == '1') == 1))
+        if (bc == 1)
+            states_id.adjacent(i + 1) = 1;
+        end
     else
         states_id.adjacent(i + 1) = 0;
     end

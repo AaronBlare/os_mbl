@@ -18,9 +18,9 @@ save_type           = input_data(12);
 save_super_operator = input_data(13);
 dump_type           = input_data(14);
 
-if dump_type == 0
+if dump_type == 1
     data_path = '../../../data/zev/matlab/';
-elseif dump_type == 1
+elseif dump_type == 0
     data_path = '';
 else
    error('Error: wrong dump_type');
@@ -251,8 +251,8 @@ for seed = seed_start : seed_start + (seed_num - 1)
                 for state_id_2 = 1:Ns
                     if(is_adjacent(idtox(state_id_1), idtox(state_id_2)))
                         hopping_ids = 1 + Nc - find( dec2bin(bitxor(idtox(state_id_1), idtox(state_id_2)),Nc) == '1' );
-                        if(hopping_ids(2) == dissipator_id)
-                            if(bitget(idtox(state_id_1), dissipator_id))
+                        if(hopping_ids(2) == Nc)
+                            if(bitget(idtox(state_id_1), Nc))
                                 dissipator(state_id_2,state_id_1) = exp(sqrt(-1)*alpha);
                                 dissipator(state_id_1,state_id_2) = -exp(-sqrt(-1)*alpha);
                             else
@@ -417,8 +417,8 @@ for seed = seed_start : seed_start + (seed_num - 1)
                 for state_id_2 = 1:Ns
                     if(is_adjacent(idtox(state_id_1), idtox(state_id_2)))
                         hopping_ids = 1 + Nc - find( dec2bin(bitxor(idtox(state_id_1), idtox(state_id_2)),Nc) == '1' );
-                        if(hopping_ids(2) == dissipator_id)
-                            if(bitget(idtox(state_id_1), dissipator_id))
+                        if(hopping_ids(2) == Nc)
+                            if(bitget(idtox(state_id_1), Nc))
                                 dissipator(state_id_2,state_id_1) = exp(sqrt(-1)*alpha);
                                 dissipator(state_id_1,state_id_2) = -exp(-sqrt(-1)*alpha);
                             else
