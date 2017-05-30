@@ -1,7 +1,5 @@
 clear all;
 
-tic
-
 filename = 'config.txt';
 input_data = importdata(filename);
 
@@ -161,6 +159,7 @@ lndbldn = -sqrt(-1) * (kron(eye(Ns),H) - kron(transpose(H),eye(Ns)));
 if (diss_type == 1)
     
     for diss_id = 1:Nc-1
+        
         diss = zeros(Ns);
         for s_id_1 = 1:Ns
             diss(s_id_1,s_id_1) = bitget(idtox(s_id_1),diss_id) - bitget(idtox(s_id_1),diss_id+1);
@@ -183,7 +182,7 @@ if (diss_type == 1)
         lndbldn = lndbldn + ...
             g * 0.5 *(2 * kron(eye(Ns),diss) * kron(transpose(diss'),eye(Ns)) - ...
             kron(transpose(diss'*diss),eye(Ns)) - kron(eye(Ns),diss'*diss));
-        
+              
     end
     
     if (periodic_bc == 1)
@@ -215,6 +214,7 @@ if (diss_type == 1)
 elseif(diss_type == 0)
     
     for diss_id = 1:Nc
+        
         diss = zeros(Ns);
         for s_id=1:Ns
             diss(s_id,s_id) = bitget(idtox(s_id),diss_id);
@@ -496,8 +496,12 @@ if (is_zev == 1)
         g, ...
         seed);
     
+    tic
+    
     [zero_evec,zero_eval] = eigs(lndbldn_sprs, 1, 'sm');
     stationary_rho_array = zero_evec;
+    
+    toc
     
     zev_rho = zeros(Ns, Ns);
     for s_id=1:Ns
