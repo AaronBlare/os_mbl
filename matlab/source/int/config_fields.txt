@@ -7,7 +7,8 @@ W
 U                   
 J                   
 g                  
-seed               
+seed_start
+seed_num               
 is_int            
 int_ist           
 int_isi

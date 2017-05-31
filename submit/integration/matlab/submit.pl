@@ -4,32 +4,37 @@ use Cwd;
 $dir = getcwd;
 
 $data_path = "/data/biophys/yusipov/os_mbl/int/matlab";
-$prefix = "characteristics_pdf";
-
+$prefix = "characteristics";
 
 $Nc = 8;
-$dissipator_type = 1;
-$alpha = 0.0;
+$diss_type = 1;
+$diss_phase = 0.0;
 $energy_type = 0;
-$bc = 0;
-$W = 8.0;
+$periodic_bc = 0;
+$W = 10.0;
 $U = 1.0;
 $J = 1.0;
 $g = 0.1;
-$seed = 0;
-$init_state_type = 0;
-$init_state_id = 50;
-$dump_type = 1;
-$begin_dump = 0.1;
-$end_dump = 10000;
-$num_dumps = 250;
-$save_type = 0;
-$file_system_type = 0;
+$seed_start = 0;
+$seed_num = 100;
+$is_int = 0;
+$int_ist = 0;
+$int_isi = 50;
+$int_dt = 1;
+$int_db = 0.1;
+$int_de = 10000;
+$int_dn = 250;
+$is_zev = 1;
+$is_zev_check = 1;
+$is_eg_stat = 1;
+$is_save_vec = 1;
+$is_save_mtx = 0
+$fs_type = 0;
 
-$seed_begin = 1;
-$seed_num = 5000;
+$seed_start_begin = 1;
+$seed_start_num = 1000;
 
-$alpha_str = sprintf("%0.4f", $alpha);
+$diss_phase_str = sprintf("%0.4f", $diss_phase);
 $W_str = sprintf("%.4f", $W);
 $U_str = sprintf("%.4f", $U);
 $J_str = sprintf("%.4f", $J);
@@ -38,56 +43,59 @@ $g_str = sprintf("%.4f", $g);
 sub ForderName{
 	$key_str = $_[0];
 	
-	return "$data_path/$prefix/Nc_${Nc}/dt_${dissipator_type}/dp_${alpha_str}/et_${energy_type}/bc_${bc}/W_${W_str}/U_${U_str}/J_${J_str}/g_${g_str}/is_${init_state_type}_${init_state_id}/dump_${dump_type}/seed_${key_str}";
+	return "$data_path/$prefix/Nc_${Nc}/dt_${diss_type}/dp_${diss_phase_str}/et_${energy_type}/bc_${periodic_bc}/W_${W_str}/U_${U_str}/J_${J_str}/g_${g_str}/seed_start${key_str}";
 }
 
 mkdir "$data_path/$prefix";
 mkdir "$data_path/$prefix/Nc_${Nc}";
-mkdir "$data_path/$prefix/Nc_${Nc}/dt_${dissipator_type}";
-mkdir "$data_path/$prefix/Nc_${Nc}/dt_${dissipator_type}/dp_${alpha_str}";
-mkdir "$data_path/$prefix/Nc_${Nc}/dt_${dissipator_type}/dp_${alpha_str}/et_${energy_type}";
-mkdir "$data_path/$prefix/Nc_${Nc}/dt_${dissipator_type}/dp_${alpha_str}/et_${energy_type}/bc_${bc}";
-mkdir "$data_path/$prefix/Nc_${Nc}/dt_${dissipator_type}/dp_${alpha_str}/et_${energy_type}/bc_${bc}/W_${W_str}";
-mkdir "$data_path/$prefix/Nc_${Nc}/dt_${dissipator_type}/dp_${alpha_str}/et_${energy_type}/bc_${bc}/W_${W_str}/U_${U_str}";
-mkdir "$data_path/$prefix/Nc_${Nc}/dt_${dissipator_type}/dp_${alpha_str}/et_${energy_type}/bc_${bc}/W_${W_str}/U_${U_str}/J_${J_str}";
-mkdir "$data_path/$prefix/Nc_${Nc}/dt_${dissipator_type}/dp_${alpha_str}/et_${energy_type}/bc_${bc}/W_${W_str}/U_${U_str}/J_${J_str}/g_${g_str}";
-mkdir "$data_path/$prefix/Nc_${Nc}/dt_${dissipator_type}/dp_${alpha_str}/et_${energy_type}/bc_${bc}/W_${W_str}/U_${U_str}/J_${J_str}/g_${g_str}/is_${init_state_type}_${init_state_id}";
-mkdir "$data_path/$prefix/Nc_${Nc}/dt_${dissipator_type}/dp_${alpha_str}/et_${energy_type}/bc_${bc}/W_${W_str}/U_${U_str}/J_${J_str}/g_${g_str}/is_${init_state_type}_${init_state_id}/dump_${dump_type}";
+mkdir "$data_path/$prefix/Nc_${Nc}/dt_${diss_type}";
+mkdir "$data_path/$prefix/Nc_${Nc}/dt_${diss_type}/dp_${diss_phase_str}";
+mkdir "$data_path/$prefix/Nc_${Nc}/dt_${diss_type}/dp_${diss_phase_str}/et_${energy_type}";
+mkdir "$data_path/$prefix/Nc_${Nc}/dt_${diss_type}/dp_${diss_phase_str}/et_${energy_type}/bc_${periodic_bc}";
+mkdir "$data_path/$prefix/Nc_${Nc}/dt_${diss_type}/dp_${diss_phase_str}/et_${energy_type}/bc_${periodic_bc}/W_${W_str}";
+mkdir "$data_path/$prefix/Nc_${Nc}/dt_${diss_type}/dp_${diss_phase_str}/et_${energy_type}/bc_${periodic_bc}/W_${W_str}/U_${U_str}";
+mkdir "$data_path/$prefix/Nc_${Nc}/dt_${diss_type}/dp_${diss_phase_str}/et_${energy_type}/bc_${periodic_bc}/W_${W_str}/U_${U_str}/J_${J_str}";
+mkdir "$data_path/$prefix/Nc_${Nc}/dt_${diss_type}/dp_${diss_phase_str}/et_${energy_type}/bc_${periodic_bc}/W_${W_str}/U_${U_str}/J_${J_str}/g_${g_str}";
 
-
-for($val = $seed_begin; $val < $seed_begin + $seed_num; $val+=1)
+for($val = $seed_start_begin; $val < $seed_start_begin + $seed_start_num * $seed_num; $val+=$seed_num)
 {
 	$exp{ForderName($i)} = $val;
 	$i++;
 }
 
-for($seed = $seed_begin; $seed < $seed_begin + $seed_num; $seed++)
+for($seed_start = $seed_begin; $seed_start < $seed_start_begin + $seed_start_num * $seed_num; $seed_start+=$seed_num)
 {	
 	$key = ForderName($seed);    
 	mkdir "$key";
 	
 	open( WF,">$key/config.txt");
 	print WF "$Nc\n"; 
-	print WF "$dissipator_type\n";  
-	print WF "$alpha\n"; 
+	print WF "$diss_type\n";  
+	print WF "$diss_phase\n"; 
 	print WF "$energy_type\n";
-	print WF "$bc\n";
+	print WF "$periodic_bc\n";
 	print WF "$W\n";
 	print WF "$U\n";
 	print WF "$J\n";
 	print WF "$g\n"; 
-	print WF "$seed\n";
-	print WF "$init_state_type\n";
-	print WF "$init_state_id\n";
-	print WF "$dump_type\n";
-	print WF "$begin_dump\n";
-	print WF "$end_dump\n";
-	print WF "$num_dumps\n";
-	print WF "$save_type\n";
-	print WF "$file_system_type\n";
+	print WF "$seed_start\n";
+	print WF "$seed_num\n";
+	print WF "$is_int\n";
+	print WF "$int_ist\n";
+	print WF "$int_isi\n";
+	print WF "$int_dt\n";
+	print WF "$int_db\n";
+	print WF "$int_de\n";
+	print WF "$int_dn\n";
+	print WF "$is_zev\n";
+	print WF "$is_zev_check\n";
+	print WF "$is_eg_stat\n";
+	print WF "$is_save_vec\n";
+	print WF "$is_save_mtx\n";
+	print WF "$fs_type\n";
 	close WF;
 	
-	$test_file = sprintf("random_energies_Nc(%d)_dt(%d)_dp(%0.4f)_et(%d)_bc(%d)_W(%0.4f)_U(%0.4f)_J(%0.4f)_gamma(%0.4f)_ist(%d)_iss(%d)_dump_type(%d)_seed(%d).txt", $Nc, $dissipator_type, $alpha, $energy_type, $bc, $W, $U, $J, $g, $init_state_type, $init_state_id, $dump_type, $seed);
+	$test_file = sprintf("random_energies_Nc(%d)_dt(%d)_dp(%0.4f)_et(%d)_bc(%d)_W(%0.4f)_U(%0.4f)_J(%0.4f)_g(%0.4f)_seed(%d).txt", $Nc, $diss_type, $diss_phase, $energy_type, $periodic_bc, $W, $U, $J, $g, $seed_start + $seed_num - 1);
 	
 	unless (-e "$key/$test_file") 
 	{
