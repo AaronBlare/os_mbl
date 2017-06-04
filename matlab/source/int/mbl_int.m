@@ -448,7 +448,7 @@ for seed = seed_start : seed_start + (seed_num - 1)
             fclose(file_id);
         end
         
-        if(is_save_mtx >= 2)
+        if(is_save_mtx >= 1)
             file_name = sprintf('%srho_d_%s', data_path, fn_suffix);
             file_id = fopen(file_name, 'w');
             for s_id_1 = 1:Ns
@@ -468,7 +468,7 @@ for seed = seed_start : seed_start + (seed_num - 1)
             fclose(file_id);
         end
         
-        if(is_save_mtx >= 2)
+        if(is_save_mtx >= 1)
             file_name = sprintf('%srho_st_%s', data_path, fn_suffix);
             file_id = fopen(file_name, 'w');
             for s_id_1 = 1:Ns
@@ -596,7 +596,7 @@ for seed = seed_start : seed_start + (seed_num - 1)
             fclose(file_id);
         end
         
-        if(is_save_mtx >= 2)
+        if(is_save_mtx >= 1)
             file_name = sprintf('%srho_d_%s', data_path, fn_suffix);
             file_id = fopen(file_name, 'w');
             for s_id_1 = 1:Ns
@@ -616,7 +616,7 @@ for seed = seed_start : seed_start + (seed_num - 1)
             fclose(file_id);
         end
         
-        if(is_save_mtx >= 2)
+        if(is_save_mtx >= 1)
             file_name = sprintf('%srho_st_%s', data_path, fn_suffix);
             file_id = fopen(file_name, 'w');
             for s_id_1 = 1:Ns
