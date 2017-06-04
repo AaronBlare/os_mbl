@@ -79,3 +79,7 @@ data/int/matlab/
 *.suo
 
 figures/int/matlab/
+
+*.user
+
+*.filters

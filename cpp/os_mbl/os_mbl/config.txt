@@ -1,0 +1,16 @@
+task 1
+Nc 8
+dt 1
+dp 1.0
+et 0.0
+bc 0
+W 10.0
+U 1.0
+J 1.0
+seed 1
+max_num_seeds 1000
+dump_vecs 1
+dump_mtxs 1
+dump_sops 0
+init_file random_energies_Nc(8)_dt(1)_dp(1.0000)_et(0)_bc(0)_W(10.0000)_U(1.0000)_J(1.0000)_g(0.1000)_seed(1337).txt
+path 
