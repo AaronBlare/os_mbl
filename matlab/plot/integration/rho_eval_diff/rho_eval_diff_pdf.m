@@ -31,7 +31,7 @@ is_save_vec = 1;
 is_save_mtx = 0;
 fs_type = 0;
 
-W = 2.0;
+W = 10.0;
 
 seed_start_begin = seed_start;
 seed_start_num = 100;
@@ -75,7 +75,7 @@ imb_data = importdata(file_name);
 imb_int = imb_data(:,1);
 imb_evo = imb_data(:,2);
 
-norm = sum(imb_evo) * 1.0 / 4000.0
+norm = sum(imb_evo) * 1.0 / 5000.0
 
 suffix = sprintf('Nc(%d)_dt(%d)_dp(%0.4f)_et(%d)_bc(%d)_W(%0.4f)_U(%0.4f)_J(%0.4f)_gamma(%0.4f)_seed(var)', ...
     Nc, ...
@@ -107,3 +107,10 @@ set(gcf, 'renderer','painters');
 set(h,'PaperUnits','normalized');
 set(h,'PaperPosition', [0 0 1 1]);
 print(gcf, '-dpdf', sprintf('%s/rho_eval_diff_pdf_%s.pdf', home_figures_path, suffix));
+
+file_name = sprintf('rho_eval_diff_pdf_%s.txt', suffix);
+file_id = fopen(file_name, 'w');
+for dump_id = 1:size(imb_int, 1)
+	fprintf(file_id, '%0.16e %0.16e\n', imb_int(dump_id), imb_evo(dump_id));
+end
+fclose(file_id);
