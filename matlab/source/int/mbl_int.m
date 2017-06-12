@@ -29,7 +29,7 @@ is_save_mtx         = input_data(23);
 fs_type             = input_data(24);
 
 if fs_type == 1
-    data_path = '../../../data/int/matlab/';
+    data_path = '../../../data/matlab/';
 elseif fs_type == 0
     data_path = '';
 else
