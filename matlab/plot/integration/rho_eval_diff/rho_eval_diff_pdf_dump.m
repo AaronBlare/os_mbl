@@ -39,9 +39,9 @@ seed_start_num = 100;
 
 states_num = nchoosek(Nc, Nc/2);
 
-num_int = 40000;
+num_int = 5000;
 evals_diff_begin = 0.0;
-evals_diff_end = 10.0;
+evals_diff_end = 1.0;
 evals_diff_shift = (evals_diff_end - evals_diff_begin) / num_int;
 evals_diff_int = zeros(num_int, 1);
 evals_diff_pdf = zeros(num_int, 1);

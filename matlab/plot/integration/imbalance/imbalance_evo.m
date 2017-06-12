@@ -3,21 +3,21 @@ clear all;
 home_figures_path = '/home/yusipov/Work/os_mbl/figures/int/matlab';
 
 data_path = '/data/biophys/yusipov/os_mbl/int/matlab/';
-prefix = 'characteristics';
+prefix = 'checking';
 data_path = sprintf('%s%s', data_path, prefix);
 
-Nc = 6;
-diss_type = 1;
+Nc = 8;
+diss_type = 0;
 diss_phase = 0.0;
 energy_type = 0;
 periodic_bc = 0;
-W = 10.0;
+W = 10;
 U = 1.0;
 J = 1.0;
 g = 0.1;
 seed_start = 1;
-seed_num = 100;
-is_int = 0;
+seed_num = 1;
+is_int = 1;
 int_ist = 0;
 int_isi = 50;
 int_dt = 1;
@@ -34,14 +34,12 @@ fs_type = 0;
 seed_start_begin = seed_start;
 seed_start_num = 100;
 
-imb_dst = zeros(seed_num * seed_start_num, 1);
-num_int = 50;
+real_num_dumps = int_dn + 2;
+imb_avg = zeros(real_num_dumps, 1);
 
 for seed_start = seed_start_begin : seed_num : seed_start_begin + seed_num * (seed_start_num - 1)
     
     for seed = seed_start : seed_start + (seed_num-1)
-        
-        seed = seed
         
         curr_path = sprintf('%s/Nc_%d/dt_%d/dp_%0.4f/et_%d/bc_%d/W_%0.4f/U_%0.4f/J_%0.4f/g_%0.4f/seed_start%d', ...
             data_path, ...
@@ -56,7 +54,7 @@ for seed_start = seed_start_begin : seed_num : seed_start_begin + seed_num * (se
             g, ...
             seed_start);
         
-        suffix = sprintf('zev_Nc(%d)_dt(%d)_dp(%0.4f)_et(%d)_bc(%d)_W(%0.4f)_U(%0.4f)_J(%0.4f)_g(%0.4f)_seed(%d).txt', ...
+        suffix = sprintf('int_Nc(%d)_dt(%d)_dp(%0.4f)_et(%d)_bc(%d)_W(%0.4f)_U(%0.4f)_J(%0.4f)_g(%0.4f)_seed(%d)_iist(%d)_iisi(%d)_idt(%d).txt', ...
             Nc, ...
             diss_type, ...
             diss_phase, ...
@@ -66,42 +64,37 @@ for seed_start = seed_start_begin : seed_num : seed_start_begin + seed_num * (se
             U, ...
             J, ...
             g, ...
-            seed);
+            seed, ...
+            int_ist, ...
+            int_isi, ...
+            int_dt);
+        
+        file_name = sprintf('%s/times_%s', curr_path, suffix);
+        times_curr = importdata(file_name);
         
         file_name = sprintf('%s/imbalance_%s', curr_path, suffix);
+        imb_curr = importdata(file_name);
         
-        imb_dst(seed) = importdata(file_name);
-    
-    end 
+        imb_avg = imb_avg + imb_curr;
+    end
 end
 
-imb_begin = min(imb_dst);
-imb_end = max(imb_dst);
-imb_shift = (imb_end - imb_begin) / num_int;
-imb_int = zeros(num_int, 1);
-imb_pdf = zeros(num_int, 1);
-for int_id = 1:num_int
-    imb_int(int_id) = imb_begin + int_id * imb_shift - 0.5 * imb_shift;
-end
-eps = 1.0e-6;
+imb_avg = imb_avg / (seed_num * seed_start_num);
 
-for i = 1 : seed_num*seed_start_num
-    int_id = floor((imb_dst(i) - imb_begin) * num_int / (imb_end - imb_begin + eps)) + 1;
-    imb_pdf(int_id) = imb_pdf(int_id) + 1;
-end
 
-imb_pdf = imb_pdf / (seed_num*seed_start_num*imb_shift);
-
-hLine = plot(imb_int, imb_pdf, 'LineWidth', 2);
+hLine = plot(times_curr * g, -log(imb_avg), 'LineWidth', 2);
 legend(hLine, sprintf('W=%0.4f \\gamma=%0.4f', W, g));
 set(gca, 'FontSize', 30);
-xlabel('$I$', 'Interpreter', 'latex');
+xlabel('$\gamma t$', 'Interpreter', 'latex');
 set(gca, 'FontSize', 30);
-ylabel('$PDF(I)$', 'Interpreter', 'latex');
+ylabel('$-\log I(\gamma t)$', 'Interpreter', 'latex');
+
 legend('-DynamicLegend');
 legend('Location','southeast')
+set(gca,'xscale','log');
+set(gca,'yscale','log');
 
-suffix = sprintf('Nc(%d)_dt(%d)_dp(%0.4f)_et(%d)_bc(%d)_W(%0.4f)_U(%0.4f)_J(%0.4f)_gamma(%0.4f)_seed(var)', ...
+fn_suffix = sprintf('int_Nc(%d)_dt(%d)_dp(%0.4f)_et(%d)_bc(%d)_W(%0.4f)_U(%0.4f)_J(%0.4f)_g(%0.4f)_seed(var)_iist(%d)_iisi(%d)_idt(%d).txt', ...
     Nc, ...
     diss_type, ...
     diss_phase, ...
@@ -110,15 +103,16 @@ suffix = sprintf('Nc(%d)_dt(%d)_dp(%0.4f)_et(%d)_bc(%d)_W(%0.4f)_U(%0.4f)_J(%0.4
     W, ...
     U, ...
     J, ...
-    g);
+    g, ...
+    int_ist, ...
+    int_isi, ...
+    int_dt);
 
-savefig(sprintf('%s/imbalance_dst_%s.fig', home_figures_path, suffix));
+savefig(sprintf('%s/imbalance_evo_%s.fig', home_figures_path, fn_suffix));
 
 h=gcf;
 set(h,'PaperOrientation','landscape');
 set(gcf, 'renderer','painters');
 set(h,'PaperUnits','normalized');
 set(h,'PaperPosition', [0 0 1 1]);
-print(gcf, '-dpdf', sprintf('%s/imbalance_dst_%s.pdf', home_figures_path, suffix));
-
-
+print(gcf, '-dpdf', sprintf('%s/imbalance_evo_%s.pdf', home_figures_path, fn_suffix));

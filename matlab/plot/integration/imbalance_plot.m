@@ -3,7 +3,7 @@ clear all;
 home_figures_path = '/home/yusipov/Work/os_mbl/figures/int/matlab';
 
 data_path = '/data/biophys/yusipov/os_mbl/int/matlab/';
-prefix = 'characteristics_pdf';
+prefix = 'checking';
 data_path = sprintf('%s%s', data_path, prefix);
 
 Nc = 8;

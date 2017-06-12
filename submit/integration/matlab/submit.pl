@@ -4,10 +4,10 @@ use Cwd;
 $dir = getcwd;
 
 $data_path = "/data/biophys/yusipov/os_mbl/int/matlab";
-$prefix = "characteristics";
+$prefix = "checking";
 
 $Nc = 8;
-$diss_type = 1;
+$diss_type = 0;
 $diss_phase = 0.0;
 $energy_type = 0;
 $periodic_bc = 0;
@@ -16,8 +16,8 @@ $U = 1.0;
 $J = 1.0;
 $g = 0.1;
 $seed_start = 0;
-$seed_num = 100;
-$is_int = 0;
+$seed_num = 1;
+$is_int = 1;
 $int_ist = 0;
 $int_isi = 50;
 $int_dt = 1;
@@ -34,7 +34,7 @@ $fs_type = 0;
 $seed_start_begin = 1;
 $seed_start_num = 100;
 
-for($W = 0.9; $W <= 10; $W += 1)
+for($W = 10; $W <= 10; $W += 1)
 {
 
 	$diss_phase_str = sprintf("%0.4f", $diss_phase);
