@@ -60,7 +60,6 @@ for($W = 0.1; $W <= 10; $W += 0.1)
 	close WF;
 		
 	$test_file = sprintf("rho_eval_diff_pdf_Nc(%d)_dt(%d)_dp(%0.4f)_et(%d)_bc(%d)_W(%0.4f)_U(%0.4f)_J(%0.4f)_g(%0.4f)_seed(var).txt", $Nc, $diss_type, $diss_phase, $energy_type, $periodic_bc, $W, $U, $J, $g);
-		
 
 	print "qsub -wd $dir run.sh $key\n";
 	system "qsub -wd $dir run.sh $key";

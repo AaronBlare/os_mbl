@@ -11,7 +11,7 @@ diss_type = 1;
 diss_phase = 0.0;
 energy_type = 0;
 periodic_bc = 0;
-W = 10;
+W = 2;
 U = 1.0;
 J = 1.0;
 g = 0.1;
@@ -31,19 +31,12 @@ is_save_vec = 1;
 is_save_mtx = 0;
 fs_type = 0;
 
-W = 10.0;
+W = 1.0;
 
 seed_start_begin = seed_start;
 seed_start_num = 100;
 
 states_num = nchoosek(Nc, Nc/2);
-
-num_int = 500;
-evals_diff_begin = 0;
-evals_diff_end = 0.00025;
-evals_diff_shift = (evals_diff_end - evals_diff_begin) / num_int;
-evals_diff_int = zeros(num_int, 1);
-evals_diff_pdf = zeros(num_int, 1);
 
 curr_path = sprintf('%s/Nc_%d/dt_%d/dp_%0.4f/et_%d/bc_%d/W_%0.4f/U_%0.4f/J_%0.4f/g_%0.4f/rho_eval_diff_pdf', ...
     data_path, ...
@@ -75,7 +68,7 @@ imb_data = importdata(file_name);
 imb_int = imb_data(:,1);
 imb_evo = imb_data(:,2);
 
-norm = sum(imb_evo) * 1.0 / 5000.0
+sum(imb_evo)
 
 suffix = sprintf('Nc(%d)_dt(%d)_dp(%0.4f)_et(%d)_bc(%d)_W(%0.4f)_U(%0.4f)_J(%0.4f)_gamma(%0.4f)_seed(var)', ...
     Nc, ...
