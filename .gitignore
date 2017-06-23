@@ -83,3 +83,13 @@ figures/int/matlab/
 *.user
 
 *.filters
+
+<<<<<<< Updated upstream
+figures/
+=======
+data/cpp/
+
+data/matlab/
+
+data/sent/
+>>>>>>> Stashed changes
