@@ -84,8 +84,6 @@ void set_param(ConfigParam &param, string str, string value)
 		param.seed = atoi(value.c_str());
 	}
 
-
-
 	if (str.compare("max_num_seeds") == 0)
 	{
 		param.max_num_seeds = atoi(value.c_str());

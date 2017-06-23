@@ -28,7 +28,7 @@ is_save_vec         = input_data(22);
 is_save_mtx         = input_data(23);
 fs_type             = input_data(24);
 
-data_path = '../../data/int/matlab/';
+data_path = '../../data/matlab/';
 
 Np = Nc/2;
 Ns = nchoosek(Nc, Np);
@@ -91,6 +91,6 @@ for i = 1:size(rho_d_data)
     rho_d_fb(rho_d_data(i,1), rho_d_data(i,2)) = rho_d_data(i,3) + sqrt(-1) * rho_d_data(i,4);
 end
 
+diff_mtx = rho_d_fb - rho_d_zev;
 
-
-
+max_diff = max(max(abs(diff_mtx)))
