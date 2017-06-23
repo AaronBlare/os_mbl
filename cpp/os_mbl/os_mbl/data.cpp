@@ -1,16 +1,5 @@
 #include "data.h"
-#include "Model.h"
-#include "InitFs.h"
-#include "InitH.h"
-#include "Init_a1_a2.h"
-#include "Init_f_d.h"
-#include "TranspFs.h"
-#include "CalcQs.h"
-#include "CalcKs.h"
-#include "CalcRs.h"
-#include "CalcGs.h"
-#include "linSolv.h"
-#include "CalcRho.h"
+#include "f_basis.h"
 
 void run_trans_rates(ConfigData &cd, ConfigParam &cp)
 {
