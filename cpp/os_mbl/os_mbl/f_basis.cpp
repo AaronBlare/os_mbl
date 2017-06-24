@@ -1484,6 +1484,9 @@ void init_a1_a2_diss1(Model * m, ConfigData &cd, ConfigParam &cp)
 
 	crsMatrix * result_a_matrix = NULL;
 
+	double time = omp_get_wtime();
+	double init_time = time;
+
 	crsMatrix * A1 = create_A1_diss1_matrix(m, cd, cp, 0);
 	crsMatrix * A2 = create_A2_diss1_matrix(m, cd, cp, 0);
 
@@ -1582,6 +1585,9 @@ void init_a1_a2_diss1(Model * m, ConfigData &cd, ConfigParam &cp)
 	result_a_matrix = new crsMatrix(*a_mat_tmp_1);
 
 	delete a_mat_tmp_1;
+
+	time = omp_get_wtime() - init_time;
+	cout << "time of a_" << "0 : " << time << endl << endl;
 
 	int diss_num = cd.Nc - 1;
 	if (cp.bc == 1)
@@ -1699,6 +1705,10 @@ void init_a1_a2_diss1(Model * m, ConfigData &cd, ConfigParam &cp)
 
 			delete a_mat_tmp_1;
 			delete a_mat_tmp_2;
+
+			time = omp_get_wtime() - init_time;
+			cout << "time of a_" << dissId << " : " << time << endl << endl;
+
 		}
 	}
 

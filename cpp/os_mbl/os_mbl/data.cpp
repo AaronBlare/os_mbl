@@ -41,28 +41,76 @@ void run_f_ode(ConfigData &cd, ConfigParam &cp)
 	init_hamiltonian_data(cd, cp);
 
 	double time = omp_get_wtime();
+	double init_time = time;
 
 	Model * model;
 	model = createModel(cd.Ns-1, cp);
+	time = omp_get_wtime() - init_time;
+	cout << "time of createModel: " << time << endl << endl;
+
 	initFs(model->Fs, model->N);
+	time = omp_get_wtime() - init_time;;
+	cout << "time of initFs: " << time << endl << endl;
+
 	init_hE_vector(model, cd, cp);
+	time = omp_get_wtime() - init_time;
+	cout << "time of init_hE_vector: " << time << endl << endl;
+
 	init_hU_vector(model, cd, cp);
+	time = omp_get_wtime() - init_time;
+	cout << "time of init_hU_vector: " << time << endl << endl;
+
 	init_hJ_vector(model, cd, cp);
+	time = omp_get_wtime() - init_time;
+	cout << "time of init_hJ_vector: " << time << endl << endl;
+
 	init_a1_a2_diss1(model, cd, cp);
+	time = omp_get_wtime() - init_time;
+	cout << "time of init_a1_a2_diss1: " << time << endl << endl;
+
 	init_f_d_valentin(model);
+	time = omp_get_wtime() - init_time;
+	cout << "time of init_f_d_valentin: " << time << endl << endl;
+
 	transpFs(model);
+	time = omp_get_wtime() - init_time;
+	cout << "time of transpFs: " << time << endl << endl;
+
 	calcQEs(model);
+	time = omp_get_wtime() - init_time;
+	cout << "time of calcQEs: " << time << endl << endl;
+
 	calcQUs(model);
+	time = omp_get_wtime() - init_time;
+	cout << "time of calcQUs: " << time << endl << endl;
+
 	calcQJs(model);
+	time = omp_get_wtime() - init_time;
+	cout << "time of calcQJs: " << time << endl << endl;
+
 	calcKs(model, cd, cp);
+	time = omp_get_wtime() - init_time;
+	cout << "time of calcKs: " << time << endl << endl;
+
 	calcRs(model, cd, cp);
+	time = omp_get_wtime() - init_time;
+	cout << "time of calcRs: " << time << endl << endl;
+
 	calcGs(model);
+	time = omp_get_wtime() - init_time;
+	cout << "time of calcGs: " << time << endl << endl;
 
 	linSolv(model);
+	time = omp_get_wtime() - init_time;
+	cout << "time of linSolv: " << time << endl << endl;
 
 	linSolvCheck(model);
+	time = omp_get_wtime() - init_time;
+	cout << "time of linSolvCheck: " << time << endl << endl;
 
 	calcRho(model);
+	time = omp_get_wtime() - init_time;
+	cout << "time of calcRho: " << time << endl << endl;
 
 	if (cp.dump_mtxs > 0)
 	{
@@ -72,9 +120,6 @@ void run_f_ode(ConfigData &cd, ConfigParam &cp)
 	}
 
 	freeModel(model);
-
-	time = omp_get_wtime() - time;
-	cout << "time of init hamiltonian: " << time << endl << endl;
 
 	free_hamiltonian_data(cd);
 	free_aux_data(cd);

@@ -42,8 +42,8 @@ begin_eval_id = floor(states_num * 1/3);
 end_eval_id = floor(states_num * 2/3);
 begin_part = 1 / 3;
 end_part = 2 / 3;
-begin_eval = 1 * 10.^(-6);
-end_eval = 1 * 10.^(-4);
+begin_eval = 9 * 10.^(-6);
+end_eval = 4 * 10.^(-4);
 
 num_int = 1000;
 evals_diff_begin = 0.0;
