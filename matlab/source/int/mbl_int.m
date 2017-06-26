@@ -213,7 +213,34 @@ for seed = seed_start : seed_start + (seed_num - 1)
                 g * 0.5 *(2 * kron(eye(Ns),diss) * kron(transpose(diss'),eye(Ns)) - ...
                 kron(transpose(diss'*diss),eye(Ns)) - kron(eye(Ns),diss'*diss));
         end
+          
+    elseif (diss_type == 2)
         
+        diss_id = Nc/2;
+        
+        diss = zeros(Ns);
+        for s_id_1 = 1:Ns
+            diss(s_id_1,s_id_1) = bitget(idtox(s_id_1),diss_id) - bitget(idtox(s_id_1),diss_id+1);
+            for s_id_2 = 1:Ns
+                if(is_adjacent(idtox(s_id_1), idtox(s_id_2)))
+                    hop = 1 + Nc - find(dec2bin(bitxor(idtox(s_id_1),idtox(s_id_2)),Nc)=='1');
+                    if(hop(2) == diss_id)
+                        if((bitget(idtox(s_id_1),diss_id)))
+                            diss(s_id_2,s_id_1) = exp(sqrt(-1)*diss_phase);
+                            diss(s_id_1,s_id_2) = -exp(-sqrt(-1)*diss_phase);
+                        else
+                            diss(s_id_2,s_id_1) = -exp(-sqrt(-1)*diss_phase);
+                            diss(s_id_1,s_id_2) = exp(sqrt(-1)*diss_phase);
+                        end
+                    end
+                end
+            end
+        end
+        
+        lndbldn = lndbldn + ...
+            g * 0.5 *(2 * kron(eye(Ns),diss) * kron(transpose(diss'),eye(Ns)) - ...
+            kron(transpose(diss'*diss),eye(Ns)) - kron(eye(Ns),diss'*diss));
+  
     elseif(diss_type == 0)
         
         for diss_id = 1:Nc
@@ -689,6 +716,33 @@ for seed = seed_start : seed_start + (seed_num - 1)
                         diss' * diss * zev_rho);
                     
                 end
+            end
+            
+            if(diss_type == 2)
+                diss_id = Nc/2;
+                diss = zeros(Ns);
+                for s_id_1 = 1:Ns
+                    diss(s_id_1, s_id_1) = bitget(idtox(s_id_1), diss_id) - bitget(idtox(s_id_1), diss_id+1);
+                    for s_id_2 = 1:Ns
+                        if(is_adjacent(idtox(s_id_1), idtox(s_id_2)))
+                            hopping_ids = 1 + Nc - find( dec2bin(bitxor(idtox(s_id_1), idtox(s_id_2)),Nc) == '1' );
+                            if(hopping_ids(2) == diss_id)
+                                if(bitget(idtox(s_id_1), diss_id))
+                                    diss(s_id_2,s_id_1) = exp(sqrt(-1)*diss_phase);
+                                    diss(s_id_1,s_id_2) = -exp(-sqrt(-1)*diss_phase);
+                                else
+                                    diss(s_id_2,s_id_1) = -exp(-sqrt(-1)*diss_phase);
+                                    diss(s_id_1,s_id_2) = exp(sqrt(-1)*diss_phase);
+                                end
+                            end
+                        end
+                    end
+                end
+                
+                discrepancy = discrepancy + g * 0.5 * ...
+                    (2.0 * diss * zev_rho * diss' - ...
+                    zev_rho * diss' * diss - ...
+                    diss' * diss * zev_rho);
             end
             
             if(diss_type == 0)
