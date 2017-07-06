@@ -27,7 +27,7 @@ int main(int argc, char ** argv)
 	}
 	else if (param.task == 2)
 	{
-		run_trans_rates(cd, param);
+		run_f_int(cd, param);
 	}
 	else
 	{

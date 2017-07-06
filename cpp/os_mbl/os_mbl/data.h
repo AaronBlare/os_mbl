@@ -33,6 +33,7 @@ struct ConfigData
 void run_trans_rates(ConfigData &cd, ConfigParam &cp);
 void run_zero_eigen_vector(ConfigData &cd, ConfigParam &cp);
 void run_f_ode(ConfigData &cd, ConfigParam &cp);
+void run_f_int(ConfigData &cd, ConfigParam &cp);
 
 int init_aux_data(ConfigData &cd);
 void free_aux_data(ConfigData &cd);
@@ -57,3 +58,21 @@ void calculate_characteristics(ConfigData &cd, ConfigParam &cp, bool append);
 
 void init_libladian(ConfigData &cd, ConfigParam &cp);
 void free_libladian(ConfigData &cd, ConfigParam &cp);
+
+
+struct IntData
+{
+	double * dump_times;
+
+	dcomplex * k1;
+	dcomplex * k2;
+	dcomplex * k3;
+	dcomplex * k4;
+	dcomplex * val;
+	dcomplex * tmp1;
+	dcomplex * tmp2;
+	dcomplex * tmp3;
+};
+
+void init_int_data(IntData &intd, ConfigData &cd, ConfigParam &cp);
+void free_int_data(IntData &intd, ConfigData &cd, ConfigParam &cp);

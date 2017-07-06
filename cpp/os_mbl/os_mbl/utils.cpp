@@ -69,15 +69,15 @@ string file_name_suffix(ConfigParam &cp, int precision)
 	}
 	else if (cp.task == 1)
 	{
-		return file_name_suffix_int(cp, precision);
+		return file_name_suffix_f_ode(cp, precision);
 	}
 	else if (cp.task == 2)
 	{
-		return file_name_suffix_tr(cp, precision);
+		return file_name_suffix_f_int(cp, precision);
 	}
 	else if (cp.task == 3)
 	{
-		return file_name_suffix_qj(cp, precision);
+		return file_name_suffix_tr(cp, precision);
 	}
 	else
 	{
@@ -90,33 +90,54 @@ string file_name_suffix(ConfigParam &cp, int precision)
 string file_name_suffix_zev(ConfigParam &cp, int precision)
 {
 	stringstream fns;
+	fns << "_zev";
 	fns << "_Nc(" << cp.Nc << ")";
 	fns << "_dt(" << cp.dt << ")";
-	fns << "_alpha(" << setprecision(precision) << fixed << cp.dp << ")";
+	fns << "_dp(" << setprecision(precision) << fixed << cp.dp << ")";
 	fns << "_et(" << cp.et << ")";
+	fns << "_bc(" << cp.bc << ")";
 	fns << "_W(" << setprecision(precision) << fixed << cp.W << ")";
 	fns << "_U(" << setprecision(precision) << fixed << cp.U << ")";
 	fns << "_J(" << setprecision(precision) << fixed << cp.J << ")";
 	fns << "_g(" << setprecision(precision) << fixed << cp.g << ")";
-	fns << "_max_num_seeds(" << cp.max_num_seeds << ")";
 	fns << "_seed(" << cp.seed << ")";
 	fns << ".txt";
 
 	return fns.str();
 }
 
-string file_name_suffix_int(ConfigParam &cp, int precision)
+string file_name_suffix_f_ode(ConfigParam &cp, int precision)
 {
 	stringstream fns;
+	fns << "_f_ode";
 	fns << "_Nc(" << cp.Nc << ")";
 	fns << "_dt(" << cp.dt << ")";
-	fns << "_alpha(" << setprecision(precision) << fixed << cp.dp << ")";
+	fns << "_dp(" << setprecision(precision) << fixed << cp.dp << ")";
 	fns << "_et(" << cp.et << ")";
+	fns << "_bc(" << cp.bc << ")";
 	fns << "_W(" << setprecision(precision) << fixed << cp.W << ")";
 	fns << "_U(" << setprecision(precision) << fixed << cp.U << ")";
 	fns << "_J(" << setprecision(precision) << fixed << cp.J << ")";
 	fns << "_g(" << setprecision(precision) << fixed << cp.g << ")";
-	fns << "_max_num_seeds(" << cp.max_num_seeds << ")";
+	fns << "_seed(" << cp.seed << ")";
+	fns << ".txt";
+
+	return fns.str();
+}
+
+string file_name_suffix_f_int(ConfigParam &cp, int precision)
+{
+	stringstream fns;
+	fns << "_f_int";
+	fns << "_Nc(" << cp.Nc << ")";
+	fns << "_dt(" << cp.dt << ")";
+	fns << "_dp(" << setprecision(precision) << fixed << cp.dp << ")";
+	fns << "_et(" << cp.et << ")";
+	fns << "_bc(" << cp.bc << ")";
+	fns << "_W(" << setprecision(precision) << fixed << cp.W << ")";
+	fns << "_U(" << setprecision(precision) << fixed << cp.U << ")";
+	fns << "_J(" << setprecision(precision) << fixed << cp.J << ")";
+	fns << "_g(" << setprecision(precision) << fixed << cp.g << ")";
 	fns << "_seed(" << cp.seed << ")";
 	fns << ".txt";
 
@@ -126,39 +147,21 @@ string file_name_suffix_int(ConfigParam &cp, int precision)
 string file_name_suffix_tr(ConfigParam &cp, int precision)
 {
 	stringstream fns;
+	fns << "_tr";
 	fns << "_Nc(" << cp.Nc << ")";
 	fns << "_dt(" << cp.dt << ")";
-	fns << "_alpha(" << setprecision(precision) << fixed << cp.dp << ")";
+	fns << "_dp(" << setprecision(precision) << fixed << cp.dp << ")";
 	fns << "_et(" << cp.et << ")";
+	fns << "_bc(" << cp.bc << ")";
 	fns << "_W(" << setprecision(precision) << fixed << cp.W << ")";
 	fns << "_U(" << setprecision(precision) << fixed << cp.U << ")";
 	fns << "_J(" << setprecision(precision) << fixed << cp.J << ")";
 	fns << "_g(" << setprecision(precision) << fixed << cp.g << ")";
-	fns << "_max_num_seeds(" << cp.max_num_seeds << ")";
 	fns << "_seed(" << cp.seed << ")";
 	fns << ".txt";
 
 	return fns.str();
 }
-
-string file_name_suffix_qj(ConfigParam &cp, int precision)
-{
-	stringstream fns;
-	fns << "_Nc(" << cp.Nc << ")";
-	fns << "_dt(" << cp.dt << ")";
-	fns << "_alpha(" << setprecision(precision) << fixed << cp.dp << ")";
-	fns << "_et(" << cp.et << ")";
-	fns << "_W(" << setprecision(precision) << fixed << cp.W << ")";
-	fns << "_U(" << setprecision(precision) << fixed << cp.U << ")";
-	fns << "_J(" << setprecision(precision) << fixed << cp.J << ")";
-	fns << "_g(" << setprecision(precision) << fixed << cp.g << ")";
-	fns << "_max_num_seeds(" << cp.max_num_seeds << ")";
-	fns << "_seed(" << cp.seed << ")";
-	fns << ".txt";
-
-	return fns.str();
-}
-
 
 void write_double_data(string file_name, double * data, int size, int precision, bool append)
 {

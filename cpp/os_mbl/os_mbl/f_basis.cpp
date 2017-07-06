@@ -3490,7 +3490,6 @@ int createInitialMatrix(int n, dcomplex *a)
 {
 	double *re, *im;
 	int errcode, i, j;
-	//double sre = 0.0, sim=0.0;
 	double sum = 0.0;
 
 	errcode = allocComplexMatrix(n, &re, &im);
@@ -3499,17 +3498,11 @@ int createInitialMatrix(int n, dcomplex *a)
 	genNormalDistributedElemets(n, 1, re, im);
 	for (i = 0; i < n; i++)
 	{
-		//sre += abs(re[i]);
-		//sim += abs(im[i]);
 		sum += re[i] * re[i] + im[i] * im[i];
 	}
 
 	for (i = 0; i < n; i++)
 	{
-		//re[i] /= sre;
-		//im[i] /= sim;
-		//re[i] /= sqrt(sum);
-		//im[i] /= sqrt(sum);
 		re[i] = sqrt(1.0 / n / 2);
 		im[i] = sqrt(1.0 / n / 2);
 	}
@@ -3529,7 +3522,38 @@ int createInitialMatrix(int n, dcomplex *a)
 	freeComplexMatrix(re, im);
 
 	return 0;
+}
 
+void init_conditions(dcomplex *mtx, ConfigParam &cp, ConfigData &cd)
+{
+	for (int s_id_1 = 0; s_id_1 < cd.Ns; s_id_1++)
+	{
+		for (int s_id_2 = 0; s_id_2 < cd.Ns; s_id_2++)
+		{
+			mtx[s_id_1 * cd.Ns + s_id_2].re = 0.0;
+			mtx[s_id_1 * cd.Ns + s_id_2].im = 0.0;
+		}
+	}
+
+	if (cp.int_ist == 0)
+	{
+		mtx[cp.int_isi * cd.Ns + cp.int_isi].re = 1.0;
+		mtx[cp.int_isi * cd.Ns + cp.int_isi].im = 0.0;
+	}
+	else if (cp.int_ist == 1)
+	{
+		for (int s_id_1 = 0; s_id_1 < cd.Ns; s_id_1++)
+		{
+			mtx[s_id_1 * cd.Ns + s_id_1].re = 1.0 / cd.Ns;
+			mtx[s_id_1 * cd.Ns + s_id_1].im = 0.0;
+		}
+	}
+	else
+	{
+		stringstream msg;
+		msg << "wrong int_ist value: " << cp.int_ist << endl;
+		Error(msg.str());
+	}
 }
 
 void multMatVec(crsMatrix *mat, dcomplex * x, dcomplex * res)
@@ -3550,16 +3574,13 @@ void multMatVec(crsMatrix *mat, dcomplex * x, dcomplex * res)
 		}
 	}
 }
-void calcVectValue(double t, double h, Model * m, dcomplex *x, dcomplex * res, dcomplex * tmp1, dcomplex * tmp2)
+void calcVectValue(double h, Model * m, dcomplex *x, dcomplex * res, dcomplex * tmp1, dcomplex * tmp2)
 {
 	int i;
 	int N_mat = m->N_mat;
 	crsMatrix * Gs = m->Gs;
 	crsMatrix * QEs = m->QEs;
 	dcomplex  * Ks = m->Ks;
-	//double T = m->conf.T;
-	//double A0 = m->conf.A0;
-	//double w = m->conf.w;
 	double T = 0.0;
 	double A0 = 0.0;
 	double w = 0.0;
@@ -3569,18 +3590,8 @@ void calcVectValue(double t, double h, Model * m, dcomplex *x, dcomplex * res, d
 
 	for (i = 0; i < N_mat; i++)
 	{
-		//res[i].re = (tmp1[i].re + A0 * sin(w * t) * tmp2[i].re - Ks[i].re) * h;
-		/*if(sin(w * t) < 0.0)
-		{
-		res[i].re = (tmp1[i].re + A0 * (-1.0) * tmp2[i].re - Ks[i].re) * h;
-		}
-		else
-		{
-		res[i].re = (tmp1[i].re + A0 * (+1.0) * tmp2[i].re - Ks[i].re) * h;
-		}*/
-		//res[i].im = (tmp1[i].im + A0 * cos(w * t) * tmp2[i].im - Ks[i].im) * h;
-		res[i].re = (tmp1[i].re + A0 * cos(w * t) * tmp2[i].re - Ks[i].re) * h;
-		res[i].im = 0.0;//(tmp1[i].im + A0 * sin(w * t + PI) * tmp2[i].im - Ks[i].im) * h;
+		res[i].re = (tmp1[i].re - Ks[i].re) * h;
+		res[i].im = 0.0;
 	}
 }
 dcomplex calcDiffIter(Model *m)
@@ -3598,66 +3609,115 @@ dcomplex calcDiffIter(Model *m)
 
 	return max_diff;
 }
-void calcODE(Model *m, double h, int cntItr, double t)
+void calcODE(Model *m, IntData &int_data, ConfigData &cd, ConfigParam &cp)
 {
-	double time;
-	int itr, i;
+	int i;
 	int N_mat = m->N_mat;
-	dcomplex  * RhoF = m->RhoF;
+	dcomplex * RhoF = m->RhoF;
+
+	double eps = 1.0e-10;
 
 	for (i = 0; i < N_mat; i++)
 	{
 		m->prevRhoF[i] = RhoF[i];
 	}
 
-	dcomplex * k1 = new dcomplex[N_mat];
-	dcomplex * k2 = new dcomplex[N_mat];
-	dcomplex * k3 = new dcomplex[N_mat];
-	dcomplex * k4 = new dcomplex[N_mat];
-	dcomplex * val = new dcomplex[N_mat];
-	dcomplex * tmp1 = new dcomplex[N_mat];
-	dcomplex * tmp2 = new dcomplex[N_mat];
-	dcomplex * tmp3 = new dcomplex[N_mat];
+	dcomplex * k1 = int_data.k1;
+	dcomplex * k2 = int_data.k2;
+	dcomplex * k3 = int_data.k3;
+	dcomplex * k4 = int_data.k4;
+	dcomplex * val = int_data.val;
+	dcomplex * tmp1 = int_data.tmp1;
+	dcomplex * tmp2 = int_data.tmp2;
+	dcomplex * tmp3 = int_data.tmp3;
 
-	for (itr = 0; itr < cntItr; itr++)
+
+	double curr_time = 0.0;
+	cout << endl << "dump_time: " << curr_time << endl;
+	clearRho(m);
+	calcRho(m);
+	characteristics(m, int_data, cd, cp, false);
+
+
+	int curr_dump = 1;
+	double curr_dump_time = int_data.dump_times[curr_dump];
+	double curr_step = cp.int_h;
+
+	while (curr_dump < cp.int_dn + 2)
 	{
-		time = t + h * itr;
-		calcVectValue(time, h, m, RhoF, k1, tmp1, tmp2);
+		while (fabs(curr_time + curr_step - curr_dump_time) > eps &&  curr_time + curr_step < curr_dump_time)
+		{
+			calcVectValue(curr_step, m, RhoF, k1, tmp1, tmp2);
+			for (i = 0; i < N_mat; i++)
+			{
+				val[i].re = RhoF[i].re + k1[i].re / 2.0;
+				val[i].im = RhoF[i].im + k1[i].im / 2.0;
+			}
+			calcVectValue(curr_step, m, val, k2, tmp1, tmp2);
+			for (i = 0; i < N_mat; i++)
+			{
+				val[i].re = RhoF[i].re + k2[i].re / 2.0;
+				val[i].im = RhoF[i].im + k2[i].im / 2.0;
+			}
+			calcVectValue(curr_step, m, val, k3, tmp1, tmp2);
+			for (i = 0; i < N_mat; i++)
+			{
+				val[i].re = RhoF[i].re + k3[i].re;
+				val[i].im = RhoF[i].im + k3[i].im;
+			}
+			calcVectValue(curr_step, m, val, k4, tmp1, tmp2);
+
+			for (i = 0; i < N_mat; i++)
+			{
+				RhoF[i].re += (k1[i].re + 2.0 * k2[i].re + 2.0 * k3[i].re + k4[i].re) / 6.0;
+				RhoF[i].im += (k1[i].im + 2.0 * k2[i].im + 2.0 * k3[i].im + k4[i].im) / 6.0;
+			}
+
+			curr_time += curr_step;
+		}
+
+		// Last iteration and dumping
+		curr_step = curr_dump_time - curr_time;
+
+		calcVectValue(curr_step, m, RhoF, k1, tmp1, tmp2);
 		for (i = 0; i < N_mat; i++)
 		{
 			val[i].re = RhoF[i].re + k1[i].re / 2.0;
 			val[i].im = RhoF[i].im + k1[i].im / 2.0;
 		}
-		calcVectValue(time + h / 2.0, h, m, val, k2, tmp1, tmp2);
+		calcVectValue(curr_step, m, val, k2, tmp1, tmp2);
 		for (i = 0; i < N_mat; i++)
 		{
 			val[i].re = RhoF[i].re + k2[i].re / 2.0;
 			val[i].im = RhoF[i].im + k2[i].im / 2.0;
 		}
-		calcVectValue(time + h / 2.0, h, m, val, k3, tmp1, tmp2);
+		calcVectValue(curr_step, m, val, k3, tmp1, tmp2);
 		for (i = 0; i < N_mat; i++)
 		{
 			val[i].re = RhoF[i].re + k3[i].re;
 			val[i].im = RhoF[i].im + k3[i].im;
 		}
-		calcVectValue(time + h, h, m, val, k4, tmp1, tmp2);
+		calcVectValue(curr_step, m, val, k4, tmp1, tmp2);
 
 		for (i = 0; i < N_mat; i++)
 		{
 			RhoF[i].re += (k1[i].re + 2.0 * k2[i].re + 2.0 * k3[i].re + k4[i].re) / 6.0;
 			RhoF[i].im += (k1[i].im + 2.0 * k2[i].im + 2.0 * k3[i].im + k4[i].im) / 6.0;
 		}
-	}
 
-	delete[] k1;
-	delete[] k2;
-	delete[] k3;
-	delete[] k4;
-	delete[] val;
-	delete[] tmp1;
-	delete[] tmp2;
-	delete[] tmp3;
+		curr_time = int_data.dump_times[curr_dump];
+
+		cout << endl << "dump_time: " << curr_time << endl;
+		clearRho(m);
+		calcRho(m);
+		characteristics(m, int_data, cd, cp, true);
+
+		curr_dump++;
+		curr_dump_time = int_data.dump_times[curr_dump];
+		curr_step = cp.int_h;
+	}
 }
+
 dcomplex multMatCRS_tr(dcomplex *a, crsMatrix *b)
 {
 	int N = b->N;
@@ -3686,15 +3746,14 @@ dcomplex multMatCRS_tr(dcomplex *a, crsMatrix *b)
 
 	return c;
 }
-void initRhoODE(Model *m)
+void initRhoODE(Model *m, ConfigData &cd, ConfigParam &cp)
 {
 	int N = m->N;
 	int N_mat = m->N_mat;
 	FMatrixs  * Fs = m->Fs;
 	dcomplex  * RhoF = m->RhoF;
 	dcomplex * psi = new dcomplex[(N + 1)*(N + 1)];
-	createInitialMatrix(N + 1, psi);
-	//createHermitianMatrix(N + 1, psi);
+	init_conditions(psi, cp, cd);
 
 	for (int i = 0; i < N_mat; i++)
 	{
@@ -4016,4 +4075,87 @@ void calcRho(Model *m)
 	delete Rho_tmp;
 
 	m->Rho = Rho;
+}
+
+void clearRho(Model *m)
+{
+	if (m->Rho)
+	{
+		delete m->Rho;
+		m->Rho = NULL;
+	}
+}
+
+
+void characteristics(Model *m, IntData &int_data, ConfigData &cd, ConfigParam &cp, bool append)
+{
+	MKL_Complex16 * rho_in_d = new MKL_Complex16[cd.Ns * cd.Ns];
+
+	for (int state_id_1 = 0; state_id_1 < cd.Ns; state_id_1++)
+	{
+		for (int state_id_2 = 0; state_id_2 < cd.Ns; state_id_2++)
+		{
+			rho_in_d[state_id_1 * cd.Ns + state_id_2].real = 0.0;
+			rho_in_d[state_id_1 * cd.Ns + state_id_2].imag = 0.0;
+		}
+	}
+
+	for (int i = 0; i < m->Rho->N; i++)
+	{
+		for (int k = m->Rho->RowIndex[i]; k < m->Rho->RowIndex[i + 1]; k++)
+		{
+			rho_in_d[i * cd.Ns + m->Rho->Col[k]].real = m->Rho->Value[k].re;
+			rho_in_d[i * cd.Ns + m->Rho->Col[k]].imag = m->Rho->Value[k].im;
+		}
+	}
+
+	// ######## imbalance ########
+	double * n_part = new double[cd.Nc];
+
+	for (int cell_id = 0; cell_id < cd.Nc; cell_id++)
+	{
+		n_part[cell_id] = 0.0;
+	}
+
+	for (int state_id = 0; state_id < cd.Ns; state_id++)
+	{
+		vector<int> vb = convert_int_to_vector_of_bits(cd.id_to_x[state_id], cd.Nc);
+
+		for (int cell_id = 0; cell_id < cd.Nc; cell_id++)
+		{
+			n_part[cell_id] += rho_in_d[state_id * cd.Ns + state_id].real * double(vb[cell_id]);
+		}
+	}
+
+	double sum_odd = 0.0;
+	double sum_even = 0.0;
+	double sum_all = 0.0;
+
+
+	for (int cell_id = 0; cell_id < cd.Nc; cell_id++)
+	{
+		if (cell_id % 2 == 0)
+		{
+			sum_odd += n_part[cell_id];
+		}
+		else
+		{
+			sum_even += n_part[cell_id];
+		}
+	}
+	sum_all = sum_even + sum_odd;
+
+	double imbalance = (sum_odd - sum_even) / sum_all;
+
+	delete[] n_part;
+
+	double * characteristics = new double[1];
+	characteristics[0] = imbalance;
+
+	string characteristics_fn = cp.path + "characteristics" + file_name_suffix(cp, 4);
+	cout << "save characteristics to file:" << endl << characteristics_fn << endl << endl;
+	write_double_data(characteristics_fn, characteristics, 1, 16, append);
+
+	delete[] characteristics;
+	delete[] rho_in_d;
 }

@@ -125,6 +125,156 @@ void run_f_ode(ConfigData &cd, ConfigParam &cp)
 	free_aux_data(cd);
 }
 
+void run_f_int(ConfigData &cd, ConfigParam &cp)
+{
+	init_sizes(cd, cp);
+
+	init_hamiltonian_data(cd, cp);
+
+	double time = omp_get_wtime();
+	double init_time = time;
+
+	Model * model;
+	model = createModel(cd.Ns - 1, cp);
+	time = omp_get_wtime() - init_time;
+	cout << "time of createModel: " << time << endl << endl;
+
+	initFs(model->Fs, model->N);
+	time = omp_get_wtime() - init_time;;
+	cout << "time of initFs: " << time << endl << endl;
+
+	init_hE_vector(model, cd, cp);
+	time = omp_get_wtime() - init_time;
+	cout << "time of init_hE_vector: " << time << endl << endl;
+
+	init_hU_vector(model, cd, cp);
+	time = omp_get_wtime() - init_time;
+	cout << "time of init_hU_vector: " << time << endl << endl;
+
+	init_hJ_vector(model, cd, cp);
+	time = omp_get_wtime() - init_time;
+	cout << "time of init_hJ_vector: " << time << endl << endl;
+
+	init_a1_a2_diss1(model, cd, cp);
+	time = omp_get_wtime() - init_time;
+	cout << "time of init_a1_a2_diss1: " << time << endl << endl;
+
+	init_f_d_valentin(model);
+	time = omp_get_wtime() - init_time;
+	cout << "time of init_f_d_valentin: " << time << endl << endl;
+
+	transpFs(model);
+	time = omp_get_wtime() - init_time;
+	cout << "time of transpFs: " << time << endl << endl;
+
+	calcQEs(model);
+	time = omp_get_wtime() - init_time;
+	cout << "time of calcQEs: " << time << endl << endl;
+
+	calcQUs(model);
+	time = omp_get_wtime() - init_time;
+	cout << "time of calcQUs: " << time << endl << endl;
+
+	calcQJs(model);
+	time = omp_get_wtime() - init_time;
+	cout << "time of calcQJs: " << time << endl << endl;
+
+	calcKs(model, cd, cp);
+	time = omp_get_wtime() - init_time;
+	cout << "time of calcKs: " << time << endl << endl;
+
+	calcRs(model, cd, cp);
+	time = omp_get_wtime() - init_time;
+	cout << "time of calcRs: " << time << endl << endl;
+
+	calcGs(model);
+	time = omp_get_wtime() - init_time;
+	cout << "time of calcGs: " << time << endl << endl;
+
+	initRhoODE(model, cd, cp);
+	time = omp_get_wtime() - init_time;
+	cout << "time of calcGs: " << time << endl << endl;
+
+	IntData int_data;
+	init_int_data(int_data, cd, cp);
+
+	calcODE(model, int_data, cd, cp);
+
+	free_int_data(int_data, cd, cp);
+
+	if (cp.dump_mtxs > 0)
+	{
+		string fn = cp.path + "rho" + file_name_suffix(cp, 4);
+		cout << "save rho to file:" << endl << fn << endl << endl;
+		write_sparse_complex_mtx(fn, model->Rho, 16, false);
+	}
+
+	freeModel(model);
+
+	free_hamiltonian_data(cd);
+	free_aux_data(cd);
+}
+
+
+void init_int_data(IntData &intd, ConfigData &cd, ConfigParam &cp)
+{
+	intd.dump_times = new double[cp.int_dn + 2];
+	intd.dump_times[0] = 0.0;
+	if (cp.int_dt == 0)
+	{
+		double dump_shift = (cp.int_de - cp.int_db) / double(cp.int_dn);
+		for (int dump_id = 0; dump_id < cp.int_dn + 1; dump_id++)
+		{
+			intd.dump_times[dump_id + 1] = cp.int_db + double(dump_id) * dump_shift;
+		}
+	}
+	else if (cp.int_dt == 1)
+	{
+		double begin_decade = log10(cp.int_db);
+		double end_decade = log10(cp.int_de);
+		double num_decades = end_decade - begin_decade;
+		double num_decades_dump = double(cp.int_dn) / num_decades;
+		for (int dump_id = 0; dump_id < cp.int_dn + 1; dump_id++)
+		{
+			intd.dump_times[dump_id + 1] = pow(10.0, begin_decade) * pow(10.0, (1.0 / num_decades_dump) * double(dump_id));
+		}
+	}
+	else
+	{
+		stringstream msg;
+		msg << "wrong int_dt value: " << cp.int_dt << endl;
+		Error(msg.str());
+	}
+
+	string fn = cp.path + "times" + file_name_suffix(cp, 4);
+	cout << "save times to file:" << endl << fn << endl << endl;
+	write_double_data(fn, intd.dump_times, cp.int_dn + 2, 16, false);
+
+	int N_mat = cd.Ns * cd.Ns - 1;
+
+	intd.k1 = new dcomplex[N_mat];
+	intd.k2 = new dcomplex[N_mat];
+	intd.k3 = new dcomplex[N_mat];
+	intd.k4 = new dcomplex[N_mat];
+	intd.val = new dcomplex[N_mat];
+	intd.tmp1 = new dcomplex[N_mat];
+	intd.tmp2 = new dcomplex[N_mat];
+	intd.tmp3 = new dcomplex[N_mat];
+}
+
+void free_int_data(IntData &intd, ConfigData &cd, ConfigParam &cp)
+{
+	delete[] intd.dump_times;
+
+	delete[] intd.k1;
+	delete[] intd.k2;
+	delete[] intd.k3;
+	delete[] intd.k4;
+	delete[] intd.val;
+	delete[] intd.tmp1;
+	delete[] intd.tmp2;
+	delete[] intd.tmp3;
+}
 
 void init_sizes(ConfigData &cd, ConfigParam &cp)
 {

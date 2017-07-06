@@ -89,6 +89,41 @@ void set_param(ConfigParam &param, string str, string value)
 		param.max_num_seeds = atoi(value.c_str());
 	}
 
+	if (str.compare("int_h") == 0)
+	{
+		param.int_h = atof(value.c_str());
+	}
+
+	if (str.compare("int_ist") == 0)
+	{
+		param.int_ist = atoi(value.c_str());
+	}
+
+	if (str.compare("int_isi") == 0)
+	{
+		param.int_isi = atoi(value.c_str());
+	}
+
+	if (str.compare("int_dt") == 0)
+	{
+		param.int_dt = atoi(value.c_str());
+	}
+
+	if (str.compare("int_db") == 0)
+	{
+		param.int_db = atof(value.c_str());
+	}
+
+	if (str.compare("int_de") == 0)
+	{
+		param.int_de = atof(value.c_str());
+	}
+
+	if (str.compare("int_dn") == 0)
+	{
+		param.int_dn = atoi(value.c_str());
+	}
+
 	if (str.compare("dump_vecs") == 0)
 	{
 		param.dump_vecs = atoi(value.c_str());
@@ -155,6 +190,14 @@ void output_setting(ConfigParam &param)
 	cout << "J = " << param.J											<< endl;
 	cout << "g = " << param.g											<< endl;
 	cout << "seed = " << param.seed										<< endl;
+
+	cout << "int_h = " << param.int_h << endl;
+	cout << "int_ist = " << param.int_ist << endl;
+	cout << "int_isi = " << param.int_isi << endl;
+	cout << "int_dt = " << param.int_dt << endl;
+	cout << "int_db = " << param.int_db << endl;
+	cout << "int_de = " << param.int_de << endl;
+	cout << "int_dn = " << param.int_dn << endl;
 
 	cout << "max_num_seeds = " << param.max_num_seeds					<< endl;
 	cout << "dump_vecs = " << param.dump_vecs							<< endl;

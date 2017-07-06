@@ -56,6 +56,9 @@ data/zero_eigen_vector/cpp/
 
 data/zero_eigen_vector/matlab/
 
+cpp/os_mbl/os_mbl/*.txt
+!cpp/os_mbl/os_mbl/config.txt
+
 *.asv
 
 cpp/transition_rates/\.vs/transition_rates/v14/\.suo
@@ -95,3 +98,7 @@ data/sent/
 >>>>>>> Stashed changes
 
 articles/mbl/
+
+
+
+

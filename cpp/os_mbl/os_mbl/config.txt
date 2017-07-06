@@ -1,4 +1,4 @@
-task 1
+task 2
 Nc 8
 dt 1
 dp 1.0
@@ -8,8 +8,15 @@ W 10.0
 U 1.0
 J 1.0
 g 0.1
-seed 2
-max_num_seeds 1000
+seed 1
+max_num_seeds 1000000
+int_h 0.01
+int_ist 0
+int_isi 49
+int_dt 1
+int_db 0.1
+int_de 1000
+int_dn 100
 dump_vecs 1
 dump_mtxs 1
 dump_sops 0

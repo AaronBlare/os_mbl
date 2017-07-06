@@ -137,8 +137,8 @@ int createInitialMatrix(int n, dcomplex *a);
 int genNormalDistributedElemets(int n1, int n2, double * re, double * im);
 
 void multMatVec(crsMatrix *mat, dcomplex * x, dcomplex * res);
-void initRhoODE(Model *m);
-void calcODE(Model *m, double h, int cntItr, double t = 0.0);
+void initRhoODE(Model *m, ConfigData &cd, ConfigParam &cp);
+void calcODE(Model *m, IntData &int_data, ConfigData &cd, ConfigParam &cp);
 dcomplex calcDiffIter(Model *m);
 
 void linSolv(Model *m);
@@ -146,3 +146,6 @@ void linSolvCheck(Model *m);
 void linSolvReal(Model *m);
 
 void calcRho(Model *m);
+void clearRho(Model *m);
+
+void characteristics(Model *m, IntData &int_data, ConfigData &cd, ConfigParam &cp, bool append);

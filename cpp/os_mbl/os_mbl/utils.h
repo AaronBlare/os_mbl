@@ -127,11 +127,11 @@ string file_name_suffix(ConfigParam &cp, int precision);
 
 string file_name_suffix_zev(ConfigParam &cp, int precision);
 
-string file_name_suffix_int(ConfigParam &cp, int precision);
+string file_name_suffix_f_ode(ConfigParam &cp, int precision);
 
 string file_name_suffix_tr(ConfigParam &cp, int precision);
 
-string file_name_suffix_qj(ConfigParam &cp, int precision);
+string file_name_suffix_f_int(ConfigParam &cp, int precision);
 
 void write_double_data(string file_name, double * data, int size, int precision, bool append);
 
