@@ -209,6 +209,29 @@ void run_f_int(ConfigData &cd, ConfigParam &cp)
 		write_sparse_complex_mtx(fn, model->Rho, 16, false);
 	}
 
+
+	linSolv(model);
+	time = omp_get_wtime() - init_time;
+	cout << "time of linSolv: " << time << endl << endl;
+
+	linSolvCheck(model);
+	time = omp_get_wtime() - init_time;
+	cout << "time of linSolvCheck: " << time << endl << endl;
+
+	cp.task = 1;
+
+	clearRho(model);
+	calcRho(model);
+	characteristics(model, cd, cp, false);
+
+	if (cp.dump_mtxs > 0)
+	{
+		string fn = cp.path + "rho" + file_name_suffix(cp, 4);
+		cout << "save rho to file:" << endl << fn << endl << endl;
+		write_sparse_complex_mtx(fn, model->Rho, 16, false);
+	}
+
+
 	freeModel(model);
 
 	free_hamiltonian_data(cd);

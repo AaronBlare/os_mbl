@@ -3636,7 +3636,7 @@ void calcODE(Model *m, IntData &int_data, ConfigData &cd, ConfigParam &cp)
 	cout << endl << "dump_time: " << curr_time << endl;
 	clearRho(m);
 	calcRho(m);
-	characteristics(m, int_data, cd, cp, false);
+	characteristics(m, cd, cp, false);
 
 
 	int curr_dump = 1;
@@ -3710,7 +3710,7 @@ void calcODE(Model *m, IntData &int_data, ConfigData &cd, ConfigParam &cp)
 		cout << endl << "dump_time: " << curr_time << endl;
 		clearRho(m);
 		calcRho(m);
-		characteristics(m, int_data, cd, cp, true);
+		characteristics(m, cd, cp, true);
 
 		curr_dump++;
 		curr_dump_time = int_data.dump_times[curr_dump];
@@ -4087,8 +4087,10 @@ void clearRho(Model *m)
 }
 
 
-void characteristics(Model *m, IntData &int_data, ConfigData &cd, ConfigParam &cp, bool append)
+void characteristics(Model *m, ConfigData &cd, ConfigParam &cp, bool append)
 {
+	double * characteristics = new double[1];
+
 	MKL_Complex16 * rho_in_d = new MKL_Complex16[cd.Ns * cd.Ns];
 
 	for (int state_id_1 = 0; state_id_1 < cd.Ns; state_id_1++)
@@ -4108,6 +4110,85 @@ void characteristics(Model *m, IntData &int_data, ConfigData &cd, ConfigParam &c
 			rho_in_d[i * cd.Ns + m->Rho->Col[k]].imag = m->Rho->Value[k].im;
 		}
 	}
+
+	// ######## imbalance ########
+	int Nss = pow(2, cp.Nc);
+
+	MKL_Complex16 * rho_xtd = new MKL_Complex16[Nss * Nss];
+
+	for (int xtd_st_id_1 = 0; xtd_st_id_1 < Nss; xtd_st_id_1++)
+	{
+		for (int xtd_st_id_2 = 0; xtd_st_id_2 < Nss; xtd_st_id_2++)
+		{
+			rho_xtd[xtd_st_id_1 * Nss + xtd_st_id_2].real = 0.0;
+			rho_xtd[xtd_st_id_1 * Nss + xtd_st_id_2].imag = 0.0;
+		}
+	}
+
+	for (int state_id_1 = 0; state_id_1 < cd.Ns; state_id_1++)
+	{
+		for (int state_id_2 = 0; state_id_2 < cd.Ns; state_id_2++)
+		{
+			int xtd_st_id_1 = cd.id_to_x[state_id_1];
+			int xtd_st_id_2 = cd.id_to_x[state_id_2];
+
+			rho_xtd[xtd_st_id_1 * Nss + xtd_st_id_2].real = rho_in_d[state_id_1 * cd.Ns + state_id_2].real;
+			rho_xtd[xtd_st_id_1 * Nss + xtd_st_id_2].imag = rho_in_d[state_id_1 * cd.Ns + state_id_2].imag;
+		}
+	}
+
+	int red_size = pow(2, cp.Nc / 2);
+
+	MKL_Complex16 * rho_red = new MKL_Complex16[red_size * red_size];
+
+	for (int red_st_id_1 = 0; red_st_id_1 < red_size; red_st_id_1++)
+	{
+		for (int red_st_id_2 = 0; red_st_id_2 < red_size; red_st_id_2++)
+		{
+			MKL_Complex16 sum = { 0.0, 0.0 };
+
+			for (int sum_id = 0; sum_id < red_size; sum_id++)
+			{
+				int rho_id_1 = red_st_id_1 * red_size + sum_id;
+				int rho_id_2 = red_st_id_2 * red_size + sum_id;
+
+				sum.real += rho_xtd[rho_id_1 * Nss + rho_id_2].real;
+				sum.imag += rho_xtd[rho_id_1 * Nss + rho_id_2].imag;
+			}
+
+			rho_red[red_st_id_1 * red_size + red_st_id_2].real = sum.real;
+			rho_red[red_st_id_1 * red_size + red_st_id_2].imag = sum.imag;
+		}
+	}
+
+	double eps_eval = 1.0e-8;
+
+	double * red_evals = new double[red_size];
+	for (int red_st_id = 0; red_st_id < red_size; red_st_id++)
+	{
+		red_evals[red_st_id] = 0.0;
+	}
+
+	int info = LAPACKE_zheev(LAPACK_ROW_MAJOR, 'N', 'L', red_size, rho_red, red_size, red_evals);
+
+	double ee = 0.0; // entanglement entropy
+
+	for (int red_st_id = 0; red_st_id < red_size; red_st_id++)
+	{
+		if (fabs(red_evals[red_st_id]) > eps_eval)
+		{
+			ee -= red_evals[red_st_id] * log(red_evals[red_st_id]);
+		}	
+	}
+
+	characteristics[0] = ee;
+
+	string characteristics_fn = cp.path + "entropy" + file_name_suffix(cp, 4);
+	write_double_data(characteristics_fn, characteristics, 1, 16, append);
+
+	delete[] red_evals;
+	delete[] rho_red;
+	delete[] rho_xtd;
 
 	// ######## imbalance ########
 	double * n_part = new double[cd.Nc];
@@ -4149,11 +4230,9 @@ void characteristics(Model *m, IntData &int_data, ConfigData &cd, ConfigParam &c
 
 	delete[] n_part;
 
-	double * characteristics = new double[1];
 	characteristics[0] = imbalance;
 
-	string characteristics_fn = cp.path + "characteristics" + file_name_suffix(cp, 4);
-	cout << "save characteristics to file:" << endl << characteristics_fn << endl << endl;
+	characteristics_fn = cp.path + "imbalance" + file_name_suffix(cp, 4);
 	write_double_data(characteristics_fn, characteristics, 1, 16, append);
 
 	delete[] characteristics;

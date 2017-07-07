@@ -148,4 +148,4 @@ void linSolvReal(Model *m);
 void calcRho(Model *m);
 void clearRho(Model *m);
 
-void characteristics(Model *m, IntData &int_data, ConfigData &cd, ConfigParam &cp, bool append);
+void characteristics(Model *m, ConfigData &cd, ConfigParam &cp, bool append);
