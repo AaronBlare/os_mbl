@@ -4114,9 +4114,6 @@ void characteristics(Model *m, ConfigData &cd, ConfigParam &cp, bool append)
 		}
 	}
 
-	string fn = cp.path + "rho_in_d" + file_name_suffix(cp, 4);
-	write_complex_data(fn, rho_in_d, cd.Ns * cd.Ns, 16, false);
-
 	// ######## imbalance ########
 	int Nss = pow(2, cp.Nc);
 
@@ -4166,9 +4163,6 @@ void characteristics(Model *m, ConfigData &cd, ConfigParam &cp, bool append)
 			rho_red[red_st_id_1 * red_size + red_st_id_2].imag = sum.imag;
 		}
 	}
-
-	fn = cp.path + "rho_red" + file_name_suffix(cp, 4);
-	write_complex_data(fn, rho_red, red_size * red_size, 16, false);
 
 	double eps_eval = 1.0e-8;
 
