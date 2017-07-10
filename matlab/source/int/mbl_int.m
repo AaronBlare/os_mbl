@@ -265,7 +265,7 @@ for seed = seed_start : seed_start + (seed_num - 1)
     lndbldn_sprs = sparse(lndbldn);
     lndbldn = 0;
     
-    if (is_int == 1)
+    if (0)
         
         %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
         % Init Integration
@@ -316,7 +316,7 @@ for seed = seed_start : seed_start + (seed_num - 1)
         
         start_rho = zeros(Ns * Ns, 1);
         if int_ist == 0
-            start_rho((int_isi - 1) * (Ns) + int_isi) = 1.0;
+            start_rho((int_isi - 1) * (Ns) + int_isi) = 1.0 + sqrt(-1) * 0;
         elseif int_ist == 1
             for s_id = 1:Ns
                 start_rho((s_id - 1) * (Ns) + s_id) = 1.0 / Ns;
@@ -329,8 +329,10 @@ for seed = seed_start : seed_start + (seed_num - 1)
         % Integration
         %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
         
+        opts = odeset('RelTol',1e-9,'AbsTol',1e-9);
+         
         tic
-        [times, rho_dumps] = ode45(@(times, rho_dumps) right_part(times, rho_dumps, lndbldn_sprs), dump_times, start_rho);
+        [times, rho_dumps] = ode45(@(times, rho_dumps) right_part(times, rho_dumps, lndbldn_sprs), dump_times, start_rho, opts);
         toc
         
         %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -341,6 +343,7 @@ for seed = seed_start : seed_start + (seed_num - 1)
         
         local_entropies         = zeros(total_num_dumps, 1);
         local_entropies_st      = zeros(total_num_dumps, 1);
+        local_ee                = zeros(total_num_dumps, 1);
         local_imbalances        = zeros(total_num_dumps, 1);
         local_imbalances_and    = zeros(total_num_dumps, 1);
         local_iprs              = zeros(total_num_dumps, 1);
@@ -374,6 +377,41 @@ for seed = seed_start : seed_start + (seed_num - 1)
                 local_entropies(dump_id) = -trace(current_rho_mat * logm(current_rho_mat));
                 local_entropies_st(dump_id) = -trace(current_rho_mat_and * logm(current_rho_mat_and));
             end
+            
+            % entanglement entropy
+            curr_rho_xtdb = zeros(2^Nc);
+            for s_id_1 = 1:Ns
+                for s_id_2 = 1:Ns
+                    xtd_s_1 = idtox(s_id_1);
+                    xtd_s_2 = idtox(s_id_2);
+                    curr_rho_xtdb(xtd_s_1, xtd_s_2) = current_rho_mat(s_id_1, s_id_2);
+                end
+            end
+            
+            rho_a = zeros(2^Np);
+            
+            for a_id_1 = 1:2^Np
+                for a_id_2 = 1:2^Np
+                    sum_a = 0.0;
+                    for k = 1:2^Np
+                        xtd_s_1 = (a_id_1 - 1) * 2^Np + (k - 1) + 1;
+                        xtd_s_2 = (a_id_2 - 1) * 2^Np + (k - 1) + 1;
+                        sum_a = sum_a + curr_rho_xtdb(xtd_s_1, xtd_s_2);
+                    end
+                    rho_a(a_id_1, a_id_2) = sum_a;
+                end
+            end
+            
+            evals_a = eig(rho_a);
+            
+            ee = 0;
+            for a_id = 1:2^Np
+                if(abs(evals_a(a_id)) > 1.0e-8)
+                    ee = ee - evals_a(a_id) * log2(evals_a(a_id));
+                end
+            end
+            
+            local_ee(dump_id) = ee;
             
             n_part = zeros(1,Nc);
             n_part_st = zeros(1,Nc);
@@ -435,6 +473,13 @@ for seed = seed_start : seed_start + (seed_num - 1)
         file_id = fopen(file_name, 'w');
         for dump_id = 1:total_num_dumps
             fprintf(file_id, '%0.18e\n', local_entropies_st(dump_id));
+        end
+        fclose(file_id);
+        
+        file_name = sprintf('%see_%s', data_path, fn_suffix);
+        file_id = fopen(file_name, 'w');
+        for dump_id = 1:total_num_dumps
+            fprintf(file_id, '%0.18e\n', local_ee(dump_id));
         end
         fclose(file_id);
         
@@ -768,40 +813,4 @@ for seed = seed_start : seed_start + (seed_num - 1)
             fclose(file_id);
         end
     end
-    
-    if (is_int && is_zev)
-        
-        %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-        % Intergation vs Zero Eigen Vector
-        %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-        
-        fn_suffix = sprintf('int_zev_Nc(%d)_dt(%d)_dp(%0.4f)_et(%d)_bc(%d)_W(%0.4f)_U(%0.4f)_J(%0.4f)_g(%0.4f)_seed(%d).txt', ...
-            Nc, ...
-            diss_type, ...
-            diss_phase, ...
-            energy_type, ...
-            periodic_bc, ...
-            W, ...
-            U, ...
-            J, ...
-            g, ...
-            seed);
-        
-        diag_diff_abs = zeros(Ns, 1);
-        diag_diff_rel = zeros(Ns, 1);
-        diag_int_rho = diag(int_rho);
-        diag_zev_rho = diag(zev_rho);
-        for s_id = 1:Ns
-            diag_diff_abs(s_id) = abs(abs(diag_zev_rho(s_id)) - abs(diag_int_rho(s_id)));
-            diag_diff_rel(s_id) = diag_diff_abs(s_id) / abs(diag_zev_rho(s_id));
-        end
-        
-        
-        file_name = sprintf('%sdiff_%s', data_path, fn_suffix);
-        file_id = fopen(file_name, 'w');
-        fprintf(file_id, '%0.18e\n', max(diag_diff_abs));
-        fprintf(file_id, '%0.18e\n', max(diag_diff_rel));
-        fclose(file_id);
-    end
-    
 end

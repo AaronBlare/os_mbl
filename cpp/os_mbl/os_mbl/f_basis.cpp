@@ -3645,6 +3645,9 @@ void calcODE(Model *m, IntData &int_data, ConfigData &cd, ConfigParam &cp)
 
 	while (curr_dump < cp.int_dn + 2)
 	{
+		curr_dump_time = int_data.dump_times[curr_dump];
+		curr_step = cp.int_h;
+
 		while (fabs(curr_time + curr_step - curr_dump_time) > eps &&  curr_time + curr_step < curr_dump_time)
 		{
 			calcVectValue(curr_step, m, RhoF, k1, tmp1, tmp2);
@@ -3713,9 +3716,9 @@ void calcODE(Model *m, IntData &int_data, ConfigData &cd, ConfigParam &cp)
 		characteristics(m, cd, cp, true);
 
 		curr_dump++;
-		curr_dump_time = int_data.dump_times[curr_dump];
-		curr_step = cp.int_h;
 	}
+
+	int ololo = 1;
 }
 
 dcomplex multMatCRS_tr(dcomplex *a, crsMatrix *b)
@@ -4111,6 +4114,9 @@ void characteristics(Model *m, ConfigData &cd, ConfigParam &cp, bool append)
 		}
 	}
 
+	string fn = cp.path + "rho_in_d" + file_name_suffix(cp, 4);
+	write_complex_data(fn, rho_in_d, cd.Ns * cd.Ns, 16, false);
+
 	// ######## imbalance ########
 	int Nss = pow(2, cp.Nc);
 
@@ -4161,6 +4167,9 @@ void characteristics(Model *m, ConfigData &cd, ConfigParam &cp, bool append)
 		}
 	}
 
+	fn = cp.path + "rho_red" + file_name_suffix(cp, 4);
+	write_complex_data(fn, rho_red, red_size * red_size, 16, false);
+
 	double eps_eval = 1.0e-8;
 
 	double * red_evals = new double[red_size];
@@ -4177,7 +4186,7 @@ void characteristics(Model *m, ConfigData &cd, ConfigParam &cp, bool append)
 	{
 		if (fabs(red_evals[red_st_id]) > eps_eval)
 		{
-			ee -= red_evals[red_st_id] * log(red_evals[red_st_id]);
+			ee -= red_evals[red_st_id] * log2(red_evals[red_st_id]);
 		}	
 	}
 

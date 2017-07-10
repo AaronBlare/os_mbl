@@ -56,22 +56,6 @@ for s_id_1 = 1:Ns
     end
 end
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 data_path = '../../cpp/os_mbl/os_mbl/';
 fn_suffix = sprintf('f_int_Nc(%d)_dt(%d)_dp(%0.4f)_et(%d)_bc(0)_W(%0.4f)_U(%0.4f)_J(%0.4f)_g(%0.4f)_seed(1).txt', ...
     Nc, ...

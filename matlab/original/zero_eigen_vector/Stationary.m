@@ -1,6 +1,6 @@
 function [A,B] = Stationary
 
-Nc = 8; % size of array
+Nc = 6; % size of array
 Np = Nc/2; % number of particles
 Ns=nchoosek(Nc,Np); % number of states
 

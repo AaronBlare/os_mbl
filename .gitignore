@@ -75,6 +75,8 @@ data/int/cpp/
 
 data/int/matlab/
 
+data/cluster
+
 *.sdf
 
 *.sln

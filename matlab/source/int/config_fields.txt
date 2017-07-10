@@ -3,7 +3,7 @@ diss_type
 diss_phase         
 energy_type         
 periodic_bc 		
-10                   
+W                   
 U                   
 J                   
 g                  

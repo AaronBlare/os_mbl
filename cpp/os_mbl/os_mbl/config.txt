@@ -1,10 +1,10 @@
 task 2
 Nc 8
 dt 1
-dp 1.0
+dp 0.0
 et 0
 bc 0
-W 10.0
+W 1.0
 U 1.0
 J 1.0
 g 0.1
@@ -20,5 +20,5 @@ int_dn 100
 dump_vecs 1
 dump_mtxs 1
 dump_sops 0
-init_file random_energies_Nc(8)_dt(1)_dp(1.0000)_et(0)_bc(0)_W(10.0000)_U(1.0000)_J(1.0000)_g(0.1000)_seed(12345).txt
+init_file random_energies_Nc(8)_dt(1)_dp(0.0000)_et(0)_bc(0)_W(1.0000)_U(1.0000)_J(1.0000)_g(0.1000)_seed(12345).txt
 path 
